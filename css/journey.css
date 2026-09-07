@@ -1,0 +1,424 @@
+/* ==========================================================================
+   JOURNEY, CHANNEL AND THE MOBILE SHELL
+
+   Everything here obeys the ADT token contract already documented in
+   main.css, buttons.css and motion.css.  Three of those rules do most of the
+   work in this file and are worth restating where they are being applied:
+
+     RADIUS CARRIES MEANING.  --r-status (pill) is a read-only state and is
+     never clickable.  --r-control (8px) is a control you can press.  So the
+     channel switch and every task card are 8px, and the "Pending with" label
+     beside them is a pill precisely because it is NOT a button.
+
+     BUTTONS CARRY NO SEMANTIC COLOUR.  There is no red Reject and no green
+     Approve anywhere below.  The label says what will happen; hover only
+     darkens.  Colour in this file appears on STATUS and nowhere else.
+
+     AMBER MEANS WAITING, NEVER BAD.  A task sitting in somebody's queue is
+     amber because someone still has to act on it, not because anything is
+     wrong.
+   ========================================================================== */
+
+/* ── Channel switch ─────────────────────────────────────────────────────────
+   Quiet on purpose. This changes how you are LOOKING at a record; the
+   hand-off button in the journey bar changes WHO YOU ARE. If these two ever
+   compete visually, a person watching the demo cannot tell which one just
+   happened — which is the single easiest way to make the whole thing
+   incomprehensible. */
+.channel-switch { display: flex; align-items: center; gap: 6px; }
+
+.chsw {
+  display: inline-flex; padding: 2px; gap: 2px;
+  background: var(--ol); border: 1px solid var(--border);
+  border-radius: var(--r-control);
+}
+.chsw-opt {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 10px; border: 0; background: transparent; cursor: pointer;
+  border-radius: 6px; color: var(--gray);
+  font-size: var(--ds-micro); font-weight: 600; letter-spacing: .02em;
+  transition: background-color .16s ease, color .16s ease;
+}
+.chsw-opt svg { width: 13px; height: 13px; flex: none; }
+.chsw-opt:hover { color: var(--navy); background: #fff; }
+.chsw-opt.on { background: #fff; color: var(--navy); box-shadow: 0 1px 2px rgba(15,23,42,.08); }
+.chsw-opt:focus-visible { outline: 2px solid var(--navy); outline-offset: 1px; }
+
+.jb-guide {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 10px; cursor: pointer;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--r-control); color: var(--gray);
+  font-size: var(--ds-micro); font-weight: 600;
+  transition: background-color .16s ease, color .16s ease, border-color .16s ease;
+}
+.jb-guide svg { width: 12px; height: 12px; }
+.jb-guide:hover { color: var(--navy); border-color: #d3d8de; }
+.jb-guide.on { background: var(--navy); border-color: var(--navy); color: #fff; }
+.jb-guide:focus-visible { outline: 2px solid var(--navy); outline-offset: 1px; }
+
+/* ── Journey bar ────────────────────────────────────────────────────────────
+   Above every page in both channels. It answers the three questions somebody
+   watching a fourteen-hand-off journey asks continuously and otherwise cannot
+   see: which deal, how far along, who is holding it. */
+.jbar {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  padding: 10px 16px; margin-bottom: 16px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--r-card);
+}
+/* The one place the bar changes colour: when the deal is waiting on YOU.
+   A left rail, matching the row-selection rail already used across ADT. */
+.jbar-mine { box-shadow: inset 3px 0 0 var(--navy); }
+
+.jb-left { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1 1 260px; }
+
+.jb-deal {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: var(--ds-body); font-weight: 600; color: var(--navy);
+  background: var(--ol); border: 1px solid var(--border);
+  border-radius: var(--r-control); padding: 3px 9px; cursor: pointer;
+  transition: background-color .16s ease;
+}
+.jb-deal:hover { background: #e7eaee; }
+.jb-deal:focus-visible { outline: 2px solid var(--navy); outline-offset: 1px; }
+
+.jb-stage {
+  font-size: var(--ds-body); color: var(--gray);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.jb-stage b {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  color: var(--navy); margin-right: 6px; font-variant-numeric: tabular-nums;
+}
+
+.jb-track {
+  flex: 0 1 180px; height: 4px; border-radius: 999px;
+  background: var(--ol); overflow: hidden; min-width: 90px;
+}
+.jb-fill { display: block; height: 100%; background: var(--navy); transition: width .28s cubic-bezier(.16,.86,.26,1); }
+
+.jb-right { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
+
+/* A pill — read-only, not clickable. */
+.jb-pending {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: var(--ds-caption); color: var(--gray);
+  background: var(--st-wait-bg); border: 1px solid var(--st-wait-bd);
+  color: var(--st-wait-fg); border-radius: var(--r-status); padding: 3px 11px;
+}
+.jb-pending b { font-weight: 600; }
+.jb-pending.jb-mine { background: var(--st-info-bg); border-color: var(--st-info-bd); color: var(--st-info-fg); }
+.jb-dev { opacity: .75; }
+
+.jb-terminal {
+  font-size: var(--ds-caption); border-radius: var(--r-status); padding: 3px 11px;
+  background: var(--st-idle-bg); border: 1px solid var(--st-idle-bd); color: var(--st-idle-fg);
+}
+.jb-terminal.jb-rejected { background: var(--st-bad-bg); border-color: var(--st-bad-bd); color: var(--st-bad-fg); }
+
+/* The row you are working on, pinned to the top of a listing. A pill, because
+   it is a read-only state and not a control — the row itself is the click
+   target, as every other row is. */
+.row-now {
+  display: inline-block; margin-left: 7px; vertical-align: 1px;
+  font-size: var(--ds-micro); font-weight: 600; letter-spacing: .02em;
+  padding: 1px 8px; border-radius: var(--r-status);
+  background: var(--st-info-bg); color: var(--st-info-fg);
+  border: 1px solid var(--st-info-bd);
+}
+
+/* ── Hand-off card ──────────────────────────────────────────────────────────
+   Shown between two actors. Naming the person, the device and what just
+   landed in their queue is the difference between a click-through and a
+   story — and it is the only moment in the app where the user's identity
+   changes under them, which is exactly the kind of thing that should never
+   happen silently. */
+.ho-scrim {
+  position: fixed; inset: 0; background: rgba(15,23,42,.42);
+  z-index: 400; animation: hoFade .18s ease;
+}
+.ho-card {
+  position: fixed; z-index: 401; top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  width: min(440px, calc(100vw - 32px));
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--r-card); padding: 26px 26px 20px;
+  box-shadow: 0 24px 60px -18px rgba(15,23,42,.4);
+  animation: hoRise .22s cubic-bezier(.16,.86,.26,1);
+}
+@keyframes hoFade { from { opacity: 0 } }
+@keyframes hoRise { from { opacity: 0; transform: translate(-50%,-46%) } }
+
+.ho-eyebrow {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: var(--ds-micro); letter-spacing: .1em; text-transform: uppercase;
+  color: var(--gray); margin-bottom: 16px;
+}
+.ho-who { display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; align-items: center; margin-bottom: 18px; }
+.ho-avatar {
+  grid-row: 1 / 3; width: 42px; height: 42px; border-radius: 999px;
+  background: var(--navy); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: var(--ds-body); font-weight: 600;
+}
+.ho-name { font-size: var(--ds-h2); font-weight: 600; color: var(--navy); align-self: end; }
+.ho-pos { font-size: var(--ds-caption); color: var(--gray); align-self: start; }
+
+.ho-title { font-size: var(--ds-h2); font-weight: 600; color: var(--navy); margin: 0 0 6px; }
+.ho-lede { font-size: var(--ds-body); color: var(--gray); line-height: 1.55; margin: 0 0 18px; }
+
+.ho-facts {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+  background: var(--border); border: 1px solid var(--border);
+  border-radius: var(--r-control); overflow: hidden; margin-bottom: 20px;
+}
+.ho-facts > div { background: var(--light); padding: 9px 12px; }
+.ho-facts span {
+  display: block; font-size: var(--ds-micro); text-transform: uppercase;
+  letter-spacing: .08em; color: var(--gray); margin-bottom: 3px;
+}
+.ho-facts b { font-size: var(--ds-caption); color: var(--navy); font-weight: 600; }
+.ho-facts .ho-none { color: var(--gray); font-weight: 400; }
+
+.ho-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+/* ── Mobile shell ───────────────────────────────────────────────────────────
+   A real device frame, not a narrow column. The client is being asked to
+   believe approvals move off their ERP onto a phone; a responsive squeeze of
+   a desktop form does not read as a phone, it reads as an unfinished web
+   page. */
+.mob-stage { display: flex; flex-direction: column; align-items: center; padding: 8px 0 28px; }
+
+/* HEIGHT IS CAPPED BY THE VIEWPORT, NOT FIXED.
+   A hard 760px sat below a 56px topbar and a ~76px journey bar, so on a
+   1440x900 laptop — the common demo machine — the sticky Approve/Return/Reject
+   bar rendered below the fold and was sliced in half. The one screen the
+   "approvals move to a phone" argument rests on had its actions cut off.
+   190px is topbar + journey bar + the caption beneath the frame. */
+.mob-device {
+  width: 380px; max-width: 100%;
+  height: min(760px, calc(100vh - 190px)); min-height: 460px;
+  background: #0f172a; border-radius: 38px; padding: 10px;
+  box-shadow: 0 30px 70px -28px rgba(15,23,42,.55), 0 0 0 1px rgba(15,23,42,.14);
+  position: relative; display: flex; flex-direction: column;
+}
+.mob-notch {
+  position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+  width: 108px; height: 20px; background: #0f172a; border-radius: 0 0 14px 14px; z-index: 3;
+}
+.mob-statusbar {
+  position: absolute; top: 14px; left: 26px; right: 26px; z-index: 2;
+  display: flex; justify-content: space-between; align-items: center;
+  color: #fff; font-size: 11px; font-weight: 600;
+}
+.mob-sb-right { display: flex; align-items: center; gap: 5px; }
+
+/* margin, NOT padding: the status bar prints white text and has to sit on the
+   dark device body. Padding here filled that strip with the app's own light
+   background and rendered white on white. */
+.mob-app {
+  flex: 1; min-height: 0; background: var(--light);
+  border-radius: 29px; overflow: hidden; display: flex; flex-direction: column;
+  margin-top: 30px;
+}
+.mob-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 12px 18px 12px; background: var(--card); border-bottom: 1px solid var(--border);
+}
+.mob-head-l { min-width: 0; }
+.mob-title { display: block; font-size: var(--ds-title); font-weight: 600; color: var(--navy); }
+.mob-sub {
+  display: block; font-size: var(--ds-micro); color: var(--gray);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.mob-avatar {
+  flex: none; width: 30px; height: 30px; border-radius: 999px;
+  background: var(--ol); color: var(--navy);
+  display: flex; align-items: center; justify-content: center;
+  font-size: var(--ds-micro); font-weight: 600;
+}
+.mob-body { flex: 1; min-height: 0; overflow-y: auto; padding: 14px 14px 18px; }
+
+.mob-caption {
+  margin: 14px 0 0; max-width: 46ch; text-align: center;
+  font-size: var(--ds-caption); color: var(--gray); line-height: 1.5;
+}
+
+/* ── Pending actions ────────────────────────────────────────────────────── */
+.mob-sec-head {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: var(--ds-micro); text-transform: uppercase; letter-spacing: .09em;
+  color: var(--gray); font-weight: 600; margin: 2px 2px 9px;
+}
+.mob-count {
+  background: var(--navy); color: #fff; border-radius: var(--r-status);
+  padding: 1px 8px; font-size: var(--ds-micro); letter-spacing: 0;
+}
+.mob-tasks { display: flex; flex-direction: column; gap: 9px; }
+
+.mob-task {
+  display: flex; flex-direction: column; gap: 5px; width: 100%; text-align: left;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--r-control); padding: 12px 13px; cursor: pointer;
+  transition: background-color .16s ease, border-color .16s ease;
+}
+.mob-task:hover { background: var(--row-hover); border-color: #d3d8de; }
+.mob-task:focus-visible { outline: 2px solid var(--navy); outline-offset: 1px; }
+
+.mob-task-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.mob-task-ref {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: var(--ds-caption); font-weight: 600; color: var(--navy);
+}
+.mob-task-flag {
+  font-size: var(--ds-micro); border-radius: var(--r-status); padding: 1px 8px;
+  background: var(--st-wait-bg); color: var(--st-wait-fg); border: 1px solid var(--st-wait-bd);
+}
+.mob-task-step { font-size: var(--ds-body); color: var(--navy); font-weight: 500; line-height: 1.4; }
+.mob-task-meta {
+  display: flex; align-items: center; gap: 5px;
+  font-size: var(--ds-micro); color: var(--gray);
+}
+.mob-dot { opacity: .5; }
+.mob-task-foot {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  margin-top: 2px; flex-wrap: wrap;
+}
+.mob-task-since { font-size: var(--ds-micro); color: var(--gray); }
+
+.mob-empty {
+  display: flex; flex-direction: column; align-items: center; gap: 7px;
+  padding: 54px 22px; text-align: center;
+}
+.mob-empty svg { width: 30px; height: 30px; color: var(--st-ok-fg); margin-bottom: 3px; }
+.mob-empty b { font-size: var(--ds-title); color: var(--navy); }
+.mob-empty span { font-size: var(--ds-caption); color: var(--gray); line-height: 1.5; }
+
+/* ── Read-only review ───────────────────────────────────────────────────────
+   Collapsed by default: an approver on a phone wants the headline first and
+   the forty-field detail only if something looks wrong. */
+.mob-sec {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--r-control); margin-bottom: 9px; overflow: hidden;
+}
+.mob-sec > summary {
+  list-style: none; cursor: pointer; padding: 11px 13px;
+  font-size: var(--ds-caption); font-weight: 600; color: var(--navy);
+  display: flex; align-items: center; gap: 8px;
+}
+.mob-sec > summary::-webkit-details-marker { display: none; }
+.mob-sec > summary::before {
+  content: "›"; color: var(--gray); font-size: 15px; line-height: 1;
+  transition: transform .16s ease;
+}
+.mob-sec[open] > summary::before { transform: rotate(90deg); }
+.mob-sec > summary:focus-visible { outline: 2px solid var(--navy); outline-offset: -2px; }
+
+.mob-flds { border-top: 1px solid var(--border); }
+.mob-fld {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 14px;
+  padding: 8px 13px; border-bottom: 1px solid var(--ol);
+}
+.mob-fld:last-child { border-bottom: 0; }
+.mob-fld > span { font-size: var(--ds-micro); color: var(--gray); flex: 0 0 44%; }
+.mob-fld > b {
+  font-size: var(--ds-caption); color: var(--navy); font-weight: 500;
+  text-align: right; word-break: break-word;
+}
+
+.mob-returned {
+  display: flex; flex-direction: column; gap: 3px;
+  background: var(--st-wait-bg); border: 1px solid var(--st-wait-bd);
+  border-radius: var(--r-control); padding: 10px 12px; margin-bottom: 10px;
+}
+.mob-returned b { font-size: var(--ds-micro); text-transform: uppercase; letter-spacing: .08em; color: var(--st-wait-fg); }
+.mob-ret-reason { font-size: var(--ds-caption); font-weight: 600; color: var(--navy); }
+.mob-ret-rem { font-size: var(--ds-caption); color: var(--gray); line-height: 1.45; }
+
+/* The record being decided on, at the top of the review. */
+.mob-rec {
+  display: flex; flex-direction: column; gap: 4px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--r-control); padding: 13px 14px; margin-bottom: 10px;
+}
+.mob-rec-id {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: var(--ds-micro); color: var(--gray); letter-spacing: .04em;
+}
+.mob-rec-title { font-size: var(--ds-h2); font-weight: 600; color: var(--navy); line-height: 1.3; }
+.mob-rec-foot { display: flex; align-items: center; gap: 8px; margin-top: 4px; flex-wrap: wrap; }
+.mob-rec-vendor { font-size: var(--ds-caption); color: var(--gray); }
+
+/* ── Routing strip ──────────────────────────────────────────────────────────
+   FR1.3. Two dropdowns several fields apart do not show a RANGE; this does.
+   The client's own example — cutting in house, bending and plating out — is
+   checkable at a glance here and effectively unreadable as two select values.
+
+   Subcontracted operations are marked with the accent rail already used for
+   row selection, not with a colour fill: this is structure, not status. */
+.rt-strip {
+  display: flex; gap: 1px; margin-top: 16px; overflow-x: auto;
+  background: var(--border); border: 1px solid var(--border);
+  border-radius: var(--r-control);
+}
+.rt-op {
+  flex: 1 0 116px; background: var(--card); padding: 10px 12px;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.rt-out { background: var(--ol); box-shadow: inset 0 3px 0 var(--navy); }
+.rt-num {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: var(--ds-micro); color: var(--gray); font-variant-numeric: tabular-nums;
+}
+.rt-name { font-size: var(--ds-body); color: var(--navy); font-weight: 500; }
+.rt-where { font-size: var(--ds-micro); color: var(--gray); }
+.rt-out .rt-where { color: var(--navy); font-weight: 600; }
+
+/* ── Action bar ─────────────────────────────────────────────────────────────
+   At the thumb, not at the end of a scroll. */
+.mob-actbar {
+  position: sticky; bottom: -18px; margin: 14px -14px -18px; padding: 12px 14px;
+  display: flex; gap: 8px; background: var(--card);
+  border-top: 1px solid var(--border);
+}
+.mob-actbar > button { flex: 1; min-width: 0; }
+.mob-actbar > button[disabled] { opacity: .45; cursor: not-allowed; }
+
+.mob-block {
+  display: flex; align-items: flex-start; gap: 8px;
+  background: var(--st-idle-bg); border: 1px solid var(--st-idle-bd);
+  border-radius: var(--r-control); padding: 9px 11px; margin-top: 10px;
+}
+.mob-block svg { width: 15px; height: 15px; flex: none; color: var(--gray); margin-top: 1px; }
+.mob-block span { font-size: var(--ds-caption); color: var(--gray); line-height: 1.45; }
+
+/* ── The shared dialog, as a bottom sheet ───────────────────────────────────
+   THE SAME MARKUP openReasonModal() ALREADY BUILDS. There is no second reason
+   picker for mobile — one dialog, one "Other forces remarks" rule, two
+   appearances. Restyling here rather than rebuilding there is what keeps that
+   rule in exactly one file. */
+body.mob-on .modal-back { align-items: flex-end; }
+body.mob-on .modal {
+  width: 380px; max-width: 100%; margin: 0 auto 0;
+  border-radius: 22px 22px 29px 29px;
+  animation: mobSheet .24s cubic-bezier(.16,.86,.26,1);
+}
+@keyframes mobSheet { from { transform: translateY(22px); opacity: 0 } }
+body.mob-on .modal-head { padding-top: 18px; }
+body.mob-on .modal-head::before {
+  content: ""; position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+  width: 34px; height: 4px; border-radius: 999px; background: var(--border);
+}
+body.mob-on .modal-foot { padding-bottom: 22px; }
+
+@media (max-width: 720px) {
+  .mob-device { height: 640px; border-radius: 30px; }
+  .jbar { gap: 10px; }
+  .jb-track { display: none; }
+  .ho-facts { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ho-card, .ho-scrim, body.mob-on .modal { animation: none; }
+  .jb-fill { transition: none; }
+}

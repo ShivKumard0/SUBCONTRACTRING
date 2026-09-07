@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sub-Contracting · L&amp;T</title>
+<meta name="description" content="Track organisation-owned material sent out for job work — request, order, shipment, delivery note, challan, gate outward, return, reconciliation and closure — with full traceability and an immutable activity log.">
+<meta name="application-name" content="Sub-Contracting">
+<meta name="theme-color" content="#ffffff">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="assets/logo.png">
+
+<!-- Design system carried forward from ADT_Revamp. Load order matters:
+     buttons.css is authoritative over every legacy button rule in main.css,
+     and motion.css layers transitions on top of the finished component set.
+     subcon.css comes last and only adds what has no ADT equivalent. -->
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="css/buttons.css">
+<link rel="stylesheet" href="css/motion.css">
+<link rel="stylesheet" href="css/subcon.css">
+<!-- The journey bar, the device frame and the mobile components. Last, because
+     it restyles the shared modal into a bottom sheet when the channel is
+     mobile and must win over subcon.css to do it. -->
+<link rel="stylesheet" href="css/journey.css">
+</head>
+<body>
+
+<div class="view active">
+
+  <div class="topbar">
+    <!-- The sidebar toggle lives in the sidebar, not here. ADT has exactly one
+         and putting a second in the topbar gives the same action two homes. -->
+    <!-- The page title lives on the page itself; repeating it here 60px above
+         its own h1 was template noise. The bar carries the product name and a
+         real search field instead. -->
+    <div class="topbar-left">
+      <div class="adt-logo"><img src="assets/logo.png" alt="L&T Sub-Contracting"></div>
+      <button class="tb-search" onclick="openPalette()" title="Search (Ctrl+K)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span>Search records&hellip;</span>
+        <kbd>Ctrl K</kbd>
+      </button>
+    </div>
+
+    <div class="topbar-right">
+      <!-- How you are LOOKING at this screen, and whether the walkthrough is
+           driving. Deliberately left of everything else and visually quiet:
+           switching view is not a step in the process, and it must not compete
+           with the hand-off button in the journey bar below. -->
+      <div id="channel-switch" class="channel-switch"></div>
+
+      <div class="hdr-dd-wrap">
+        <button class="tb-icon" title="Notifications" aria-label="Notifications" onclick="toggleHeaderMenu('notif-dd')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="tb-badge" id="notif-badge" hidden></span>
+        </button>
+        <div class="hdr-dd-panel hdr-dd-panel-right notif-dd" id="notif-dd"></div>
+      </div>
+
+      <!-- The vendor portal is a separate shell, so it is reached by a link
+           rather than a nav item — it is not part of this application. -->
+      <a class="btn-outline btn-sm tb-vendor-link" href="vendor.html" title="Open the external vendor portal">Vendor portal</a>
+
+      <!-- Which Team you are acting in. Team is what grants access, so it is
+           shown at all times rather than hidden inside the user menu. -->
+      <span class="tb-team" id="tb-team">&nbsp;</span>
+
+      <!-- Role switcher. Filled by renderTopbarUser(). -->
+      <div class="hdr-dd-wrap">
+        <div class="user-sel" id="user-trigger" onclick="toggleHeaderMenu('user-dd')"></div>
+        <div class="hdr-dd-panel hdr-dd-panel-right" id="user-dd"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-area">
+    <div class="sidebar" id="sidebar"></div>
+    <div class="page-content" id="page-content"></div>
+  </div>
+
+</div>
+
+<div id="toast-host"></div>
+
+<!-- Load order matters in three places:
+     · rbac.js and activity.js before core.js — the nav is built from both
+     · masters before ledger before transactions — each reads the last
+     · renderer.js before the page modules, which call registerPage() on load
+     · seed.js runs last, driving the real state machine rather than writing
+       fixtures, so a broken transition fails loudly at startup -->
+<script src="js/rbac.js"></script>
+<script src="js/activity.js"></script>
+<script src="js/notify.js"></script>
+<script src="js/core.js"></script>
+<script src="js/data/masters.js"></script>
+<script src="js/ledger.js"></script>
+<script src="js/data/transactions.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/palette.js"></script>
+<!-- journey before channel: the channel switch reads JOURNEY to decide which
+     screens default to a phone. Both before renderer, which calls into them
+     on every paint. -->
+<script src="js/journey.js"></script>
+<script src="js/channel.js"></script>
+<script src="js/renderer.js"></script>
+
+<script src="js/pages/m01-masters.js"></script>
+<script src="js/pages/m02-scr.js"></script>
+<script src="js/pages/m03-orders.js"></script>
+<script src="js/pages/m04-shipments.js"></script>
+<script src="js/pages/m05-outbound.js"></script>
+<script src="js/pages/m06-documents.js"></script>
+<script src="js/pages/m07-inward.js"></script>
+<script src="js/pages/m09-dashboard.js"></script>
+<script src="js/pages/m10-admin.js"></script>
+
+<script src="js/data/seed.js"></script>
+</body>
+</html>

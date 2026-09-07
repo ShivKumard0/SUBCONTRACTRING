@@ -1,0 +1,13 @@
+# Scratch and probe files — dev artefacts, not part of the prototype
+_ux_probe.html
+*.log
+
+# OS / editor
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*~

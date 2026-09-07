@@ -1,0 +1,397 @@
+/* ==========================================================================
+   MOTION SYSTEM  -  the single place that says how this product MOVES.
+
+   Nothing here changes a colour, a size or a layout. Every rule adds timing,
+   easing or a transform to something that already exists. That is deliberate:
+   the palette and the type scale are settled, what was missing was the feeling
+   of continuity between one state and the next.
+
+   FOUR DURATIONS, THREE CURVES.  Never invent a fifth.
+     --t-micro 110ms  colour / opacity on hover. Must feel instant.
+     --t-fast  170ms  a control responding to you: press, chevron, checkbox.
+     --t-base  260ms  something arriving or leaving: menu, row, card, toast.
+     --t-slow  380ms  a whole surface moving: split panel, modal, page.
+
+     --e-out     things ARRIVING. Fast start, long soft landing. The default.
+     --e-in-out  things MOVING IN PLACE (a panel resizing, a tab underline).
+     --e-spring  CONFIRMATIONS only. A tiny overshoot reads as "done". Use it
+                 on success checks and count changes - never on navigation,
+                 where overshoot reads as sloppy rather than delightful.
+
+   THE RULES
+     1. Entrances are always opacity + a SHORT translate (4-10px). Never
+        scale a whole page, never slide more than 10px: long slides make an
+        app feel slow no matter how fast the number says it is.
+     2. Exits are faster than entrances (roughly 0.7x) and never bounce.
+     3. Anything the pointer is over responds inside --t-micro. Anything the
+        pointer CLICKS responds inside --t-fast, and the response includes a
+        transform, not just a colour - a press must feel physical.
+     4. Stagger caps at 10 items. Past that the last row is waiting on the
+        animation rather than the data, which is a lie about performance.
+     5. Never animate width/height/top/left where transform/opacity will do.
+        The two exceptions here (.sidebar, .lp-split-sb) already existed and
+        are layout-driven; they are on their own line so it stays obvious.
+
+   REDUCED MOTION kills all of it in one block at the bottom of this section.
+   That is not a courtesy - it is the reason it is safe to use motion this
+   freely everywhere else.
+   ========================================================================== */
+:root{
+  --t-micro:110ms;
+  --t-fast:170ms;
+  --t-base:260ms;
+  --t-slow:380ms;
+  --e-out:cubic-bezier(.22,1,.36,1);
+  --e-in-out:cubic-bezier(.65,0,.35,1);
+  --e-spring:cubic-bezier(.34,1.4,.64,1);
+}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.01ms!important;
+    scroll-behavior:auto!important;
+  }
+}
+
+/* ── 1. PAGE ENTRANCE ─────────────────────────────────────────────────────
+   Every page is rendered by writing innerHTML into #adt-content, so styling
+   its direct children covers all ~60 pages without touching one builder.
+   6px and 260ms: enough to read as "this is new", short enough that a filter
+   change doesn't feel like a page load.                                    */
+@keyframes m-page-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* `backwards`, NOT `both` - see the note on m-sec-in below. */
+#adt-content>*{animation:m-page-in var(--t-base) var(--e-out) backwards}
+
+/* A ticket move repaints the whole page to keep counts honest, but the
+   user's mental model is that ONE ROW changed. Replaying the page entrance
+   there would read as a reload, so the commit path sets .m-quiet for that one
+   repaint. The row's own flash is the feedback instead - see qaCommit() in
+   js/quick-actions.js. */
+#adt-content.m-quiet>*,
+#adt-content.m-quiet .listing-page>*,
+#adt-content.m-quiet .lp-page>*,
+#adt-content.m-quiet .lp-table tbody tr,
+#adt-content.m-quiet .listing-table tbody tr,
+#adt-content.m-quiet .at-table tbody tr{animation:none!important}
+
+/* Sections inside a page come in behind the page itself, lightly staggered,
+   so the eye is led top-to-bottom instead of everything landing at once.
+
+   FILL MODE IS LOAD-BEARING. It must be `backwards`, never `both`.
+   `both` keeps the animation FILLING after it ends, and an element with a
+   filling transform creates a stacking context permanently - not just while
+   it moves. Every page section then became its own stacking context, which
+   trapped each filter dropdown's z-index inside the filter bar and let the
+   table card, a later sibling, paint straight over the open menu on every
+   listing in the app. `backwards` covers the delay (the only thing `both`
+   was buying here, since these keyframes end on the element's own resting
+   style) and leaves nothing applied once the section has landed. */
+@keyframes m-sec-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.listing-page>*,.lp-page>*,.ep-page>*{animation:m-sec-in var(--t-base) var(--e-out) backwards}
+.listing-page>*:nth-child(1),.lp-page>*:nth-child(1),.ep-page>*:nth-child(1){animation-delay:0ms}
+.listing-page>*:nth-child(2),.lp-page>*:nth-child(2),.ep-page>*:nth-child(2){animation-delay:40ms}
+.listing-page>*:nth-child(3),.lp-page>*:nth-child(3),.ep-page>*:nth-child(3){animation-delay:80ms}
+.listing-page>*:nth-child(n+4),.lp-page>*:nth-child(n+4),.ep-page>*:nth-child(n+4){animation-delay:110ms}
+
+/* ── 2. TABLE ROWS ────────────────────────────────────────────────────────
+   Rows arrive in sequence rather than as a block. Capped at 10 (rule 4);
+   row 11 onward shares row 10's delay so a long table still finishes fast. */
+@keyframes m-row-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+/* `backwards`, not `both` - the same rule as the page sections above, and now
+   load-bearing for a second reason. A FILLING transform animation leaves the
+   row animating transform forever, which gives it its own coordinate space and
+   takes the pinned ACTION cell inside it out of the card's scrollport - the
+   column silently stops sticking. `backwards` still covers the stagger delay,
+   and these keyframes end on the row's own resting style, so nothing is lost
+   by not filling forwards. See css/quick-actions.css. */
+.lp-table tbody tr,.listing-table tbody tr,.at-table tbody tr{
+  animation:m-row-in var(--t-base) var(--e-out) backwards;
+}
+.lp-table tbody tr:nth-child(1),.listing-table tbody tr:nth-child(1),.at-table tbody tr:nth-child(1){animation-delay:0ms}
+.lp-table tbody tr:nth-child(2),.listing-table tbody tr:nth-child(2),.at-table tbody tr:nth-child(2){animation-delay:22ms}
+.lp-table tbody tr:nth-child(3),.listing-table tbody tr:nth-child(3),.at-table tbody tr:nth-child(3){animation-delay:44ms}
+.lp-table tbody tr:nth-child(4),.listing-table tbody tr:nth-child(4),.at-table tbody tr:nth-child(4){animation-delay:66ms}
+.lp-table tbody tr:nth-child(5),.listing-table tbody tr:nth-child(5),.at-table tbody tr:nth-child(5){animation-delay:88ms}
+.lp-table tbody tr:nth-child(6),.listing-table tbody tr:nth-child(6),.at-table tbody tr:nth-child(6){animation-delay:110ms}
+.lp-table tbody tr:nth-child(7),.listing-table tbody tr:nth-child(7),.at-table tbody tr:nth-child(7){animation-delay:132ms}
+.lp-table tbody tr:nth-child(8),.listing-table tbody tr:nth-child(8),.at-table tbody tr:nth-child(8){animation-delay:154ms}
+.lp-table tbody tr:nth-child(9),.listing-table tbody tr:nth-child(9),.at-table tbody tr:nth-child(9){animation-delay:176ms}
+.lp-table tbody tr:nth-child(n+10),.listing-table tbody tr:nth-child(n+10),.at-table tbody tr:nth-child(n+10){animation-delay:198ms}
+
+/* Hover is a background change plus a grey rail on the leading edge. The rail
+   is the same 3px shape a SELECTED row uses in --row-sel-rail orange, so hover
+   reads as a preview of selection rather than as an unrelated effect. */
+.lp-table tbody tr td,.listing-table tbody tr td{transition:var(--row-fade),box-shadow var(--t-micro) ease}
+.lp-table tbody tr:hover:not(.lp-row-selected)>td:first-child,
+.listing-table tbody tr:hover:not(.lp-row-selected)>td:first-child{box-shadow:inset 3px 0 0 #d7dbe2}
+/* Clicking a row commits to opening its panel — say so with a fast dip. */
+.lp-table tbody tr[onclick]:active>td,.listing-table tbody tr[onclick]:active>td{background:var(--row-sel-hover)}
+
+/* ── 3. CARDS, STATS AND TILES ────────────────────────────────────────────
+   Every card-shaped surface gets the same lift. One value, everywhere: a card
+   that lifts 2px next to one that lifts 6px reads as a bug, not a hierarchy. */
+.stat-card,.setup-card,.ts-stat-card,.attendance-card,.listing-card,
+.ep-summary-card,.ep-form-card,.qcmp-card,.fcmp-card{
+  transition:transform var(--t-fast) var(--e-out),box-shadow var(--t-fast) var(--e-out),border-color var(--t-micro) ease;
+}
+.stat-card:hover,.ts-stat-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(15,23,42,.07)}
+
+/* The stat strip above every listing is a filter. It should feel like one:
+   press-down on click, and the selected rail slides in rather than appearing. */
+.listing-stat{transition:background var(--t-micro) ease,box-shadow var(--t-fast) var(--e-out),transform var(--t-fast) var(--e-out)}
+.listing-stat:active{transform:scale(.98)}
+.listing-stat-count{transition:color var(--t-fast) ease}
+/* JS adds .m-count-pop when a stat's number actually changes. Spring is
+   allowed here: it is a confirmation, not navigation (see header). */
+@keyframes m-count-pop{0%{transform:scale(1)}45%{transform:scale(1.14)}100%{transform:scale(1)}}
+.m-count-pop{animation:m-count-pop 340ms var(--e-spring)}
+
+/* Quick links, action cards and choice cards all lift the same way. */
+.ql,.action-card,.choice-card,.ts-rp-preset,.ts-mp-month,.emp-sel-item{
+  transition:transform var(--t-fast) var(--e-out),border-color var(--t-micro) ease,background var(--t-micro) ease,box-shadow var(--t-fast) var(--e-out);
+}
+.ql:hover,.choice-card:hover{transform:translateY(-1px)}
+.ql:active,.action-card:active,.choice-card:active{transform:translateY(0) scale(.99)}
+
+/* ── 4. BUTTONS AND CONTROLS ──────────────────────────────────────────────
+   buttons.css owns colour and size and explicitly forbids shadows. This adds
+   only the press: 0.97 for 110ms. Physical, and impossible to mistake for a
+   colour change, which matters because colour already means status here - and
+   it matters more now that hover no longer changes hue, only darkness. The
+   press is most of what tells you the click landed.
+
+   NOTE the transition below is element-level (`button`), so ANY rule that sets
+   `transition` on a button by CLASS beats it and drops transform, leaving the
+   press to snap. buttons.css therefore repeats transform in its own list; if
+   you add a class-level transition to a control here, do the same.          */
+button,.btn,[role="button"]{transition:background var(--t-micro) ease,border-color var(--t-micro) ease,color var(--t-micro) ease,transform var(--t-fast) var(--e-out),box-shadow var(--t-fast) var(--e-out)}
+.btn-primary:active,.btn-outline:active,.btn-secondary:active,.btn-positive:active,.btn-negative:active,.btn-success:active,
+.lp-pill-search:active,.lp-pill-clear:active,.lp-add-btn:active,.lp-edit-btn:active,.filter-search:active,.filter-reset:active,
+.ep-save-btn:active,.ep-cancel-btn:active,.ts-btn-search:active,.ts-btn-reset:active,.ts-submit-btn:active,.ts-sb-submit:active,
+.at-btn-search:active,.at-btn-reset:active,.hr-action-btn:active,.ct-action-btn:active,.cs-edit-btn:active,.wb-btn:active,
+.clock-btn:active,.lp-logs-save-btn:active,.fcmp-footer-btn:active,.cc-export-btn:active,.ccn-calc-btn:active,
+/* Tabs are buttons too, and these two had no press at all - the only thing
+   that happened on click was a marker sliding, which starts AFTER the repaint
+   and so never confirmed the click itself. */
+.mod-tab:active,.tab-btn:active,.seg-btn:active{transform:scale(.97)}
+/* Both set `transition` by class, so they must repeat transform - see above. */
+.mod-tab{transition:background .16s ease,color .16s ease,box-shadow .16s ease,transform var(--t-fast) var(--e-out)}
+.tab-btn{transition:border-color .2s,background .2s,color .2s,box-shadow .2s,transform var(--t-fast) var(--e-out)}
+
+/* Icon-only buttons rotate/scale instead of squashing - at 28px a scale
+   press is invisible, so they get a lift and a colour change with weight. */
+.lp-action-btn,.row-action,.tb-icon,.np-iconbtn,.ts-refresh-btn,.lp-isb-close,.ct-modal-close,.sidebar-toggle{
+  transition:background var(--t-micro) ease,color var(--t-micro) ease,transform var(--t-fast) var(--e-out);
+}
+.lp-action-btn:hover,.row-action:hover,.tb-icon:hover,.np-iconbtn:hover{transform:translateY(-1px)}
+.lp-action-btn:active,.row-action:active,.tb-icon:active,.np-iconbtn:active{transform:translateY(0) scale(.92)}
+.ts-refresh-btn:hover svg{transform:rotate(90deg);transition:transform var(--t-base) var(--e-out)}
+.ts-refresh-btn svg{transition:transform var(--t-base) var(--e-out)}
+
+/* Every chevron in the app turns the same way, over the same time. */
+.hdr-dd-chev,.custom-select-chevron,.sb-chev,.ts-date-chev,.cs-chev{transition:transform var(--t-fast) var(--e-out)}
+
+/* Inputs settle into focus instead of snapping. */
+.form-input,.form-select,.ep-form-input,.ep-form-select,.lp-pill-select,.lp-select,.ccp-select,.ts-rp-fld input,
+.input-suffix,.pay-group,.ep-emp-search,.emp-sel-search,.custom-select-trigger{
+  transition:border-color var(--t-fast) var(--e-out),box-shadow var(--t-fast) var(--e-out),background var(--t-micro) ease;
+}
+
+/* Keyboard focus, one ring for the whole app. Never on mouse press.
+
+   Form controls are deliberately NOT in this list. Every input, select and
+   textarea in the app already states its own focus in its own rule - the
+   border changes colour and a soft shadow comes up - so adding an offset
+   outline on top gave focused fields two concentric rings in two different
+   colours. One ring per control: bespoke where the control defines one,
+   this outline everywhere else. */
+a:focus-visible,button:focus-visible,
+[tabindex]:focus-visible,.lp-row:focus-visible,.listing-stat:focus-visible{
+  outline:2px solid var(--btn-accent,#1a1a1a);
+  outline-offset:2px;
+  border-radius:var(--r-control);
+}
+/* The fallback for any field that never got a bespoke :focus of its own. */
+input:focus-visible,select:focus-visible,textarea:focus-visible{
+  outline:none;
+  border-color:#94a3b8;
+}
+
+/* Segmented controls and pill filters slide their thumb rather than blink. */
+.seg-btn{transition:background var(--t-fast) var(--e-out),color var(--t-micro) ease,box-shadow var(--t-fast) var(--e-out)}
+.emp-sel-filter,.search-hint-chip{transition:background var(--t-micro) ease,color var(--t-micro) ease,border-color var(--t-micro) ease,transform var(--t-fast) var(--e-out)}
+.emp-sel-filter:active,.search-hint-chip:active{transform:scale(.96)}
+
+/* ── 5. PANELS AND OVERLAYS ───────────────────────────────────────────────
+   The split detail panel already animates its width. What it was missing is
+   its CONTENTS arriving: without this the text is fully painted at width 0
+   and gets revealed by a wipe, which reads as a rendering glitch. Delaying
+   the body by 90ms lets the panel open first, then the content lands in it. */
+.lp-split-sb{transition:width var(--t-slow) var(--e-in-out),opacity var(--t-base) var(--e-out),box-shadow var(--t-slow) var(--e-out)}
+@keyframes m-panel-body-in{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:none}}
+.lp-split-sb.open .lp-isb-body,.lp-split-sb.open .lp-isb-tabbar{animation:m-panel-body-in var(--t-base) var(--e-out) 90ms both}
+
+/* Detail-panel tabs. No border-color here any more - the outline moved off the
+   tab and onto the travelling .tab-ind marker - but transform must be listed
+   or the press below has nothing to ease and simply snaps on and off. */
+.lp-isb-tab{transition:color var(--t-micro) ease,transform var(--t-fast) var(--e-out)}
+.lp-isb-tab:active{transform:scale(.97)}
+
+/* Modals. Backdrop fades, panel arrives from 8px below at 0.98 scale. Exits
+   are the same motion reversed and 0.7x the time (rule 2).                */
+@keyframes m-backdrop-in{from{opacity:0}to{opacity:1}}
+@keyframes m-modal-in{from{opacity:0;transform:translateY(8px) scale(.985)}to{opacity:1;transform:none}}
+.ct-modal-overlay,#cost-calc-overlay:not(.hidden),.cmp-modal-overlay,.rr-modal-overlay{animation:m-backdrop-in var(--t-base) var(--e-out) both}
+/* `backwards`, for the reason spelled out on m-sec-in above — and this rule was
+   missed when that one was fixed. A filling transform does not only create a
+   stacking context, it makes the element the CONTAINING BLOCK for its
+   position:fixed descendants. Every dropdown in the app is fixed, so one opened
+   inside a modal was being measured in viewport coordinates while resolving
+   against the modal, and clipped by the modal's own overflow:auto on top of
+   that. The `to` keyframe is the element's own resting style, so `backwards`
+   costs nothing here and leaves nothing applied once the modal has landed. */
+.ct-modal,.cmp-modal,.cc-panel{animation:m-modal-in var(--t-slow) var(--e-out) backwards}
+
+/* Menus and dropdowns grow from the edge they are anchored to, so the menu
+   visibly belongs to the button that opened it. */
+@keyframes m-menu-in{from{opacity:0;transform:translateY(-6px) scale(.97)}to{opacity:1;transform:none}}
+.ct-action-menu.open,.hdr-dd-panel.open,.plus-dd.open,.agent-dd.open,.cs-dropdown.open{
+  animation:m-menu-in var(--t-fast) var(--e-out) both;
+  transform-origin:top right;
+}
+.custom-select.open .custom-select-menu{transform-origin:top left}
+.ct-act-item,.hdr-dd-item,.plus-dd-item,.agent-dd-item,.custom-select-option{transition:background var(--t-micro) ease,color var(--t-micro) ease,padding-left var(--t-fast) var(--e-out)}
+.ct-act-item:hover,.hdr-dd-item:hover{padding-left:18px}
+
+/* Notification popover and search overlay. */
+.notif-pop{animation:m-modal-in var(--t-base) var(--e-out) both}
+.np-item{transition:background var(--t-micro) ease}
+.np-switch,.np-switch::after,.cs-toggle-slider{transition:background var(--t-fast) var(--e-out),left var(--t-fast) var(--e-spring)}
+
+/* ── 6. NAVIGATION ────────────────────────────────────────────────────────
+   The rail already transitions its width. These are the parts that were
+   snapping: the active marker, and the label appearing after a collapse.  */
+/* The rail is rebuilt on every render, so nothing in it may ANIMATE on entry
+   or the whole sidebar would flicker each time a filter changes. Transitions
+   only - they fire on state change, not on being re-created. */
+.sb-item span,.sb-parent span{transition:opacity var(--t-fast) var(--e-out)}
+
+/* Page pagination. */
+.lp-pg-btn{transition:background var(--t-micro) ease,color var(--t-micro) ease,border-color var(--t-micro) ease,transform var(--t-fast) var(--e-out)}
+.lp-pg-btn:active:not(:disabled){transform:scale(.9)}
+
+/* ── 6b. TAB BARS: ONE MARKER THAT TRAVELS ────────────────────────────────
+   Seven tab bars, three shapes, one behaviour. Each used to draw its active
+   marker on the active tab itself, so every switch was one marker blinking
+   out and another blinking in - two events the eye has to join up. It is one
+   marker moving between two tabs, so it is drawn as one marker that moves.
+
+   The marker is a sibling of the tabs, absolutely positioned inside the bar.
+   The bars that scroll (.prof-tab-bar, .cs-tab-strip, .lp-isb-tabs) keep it
+   glued to its tab, because an absolutely positioned child of a scroll
+   container scrolls with the content. js/tab-slide.js writes the coordinates;
+   the travel is the transition below.
+
+   THE SHAPES, and which bars wear them:
+     --box    a 1.5px outline round the whole tab    detail panel tabs
+     --pill   a raised white tile behind the tab     module + form segmenteds
+     --under  a bar along the tab's bottom edge      the four underline bars
+
+   Each family then has to STOP drawing its own marker, which is the block at
+   the end. Only the marker moves out of the tab - colour and weight stay on
+   the tab itself, so a tab still looks selected the instant it is clicked,
+   before the marker has finished arriving.
+
+   Not included: .dashboard-tabs. Those are separated chips, each with its own
+   border and opaque white fill, not a track with a marker running along it -
+   a marker behind them would simply be invisible. Different pattern, and
+   giving it this one would mean redesigning the row rather than animating it.
+   ──────────────────────────────────────────────────────────────────────── */
+.lp-isb-tabs,.mod-tabs,.segmented,.cs-tab-strip,.cs-sub-tabs,.prof-tab-bar,.pm-user-subtabs{position:relative}
+
+.tab-ind{
+  position:absolute;left:0;top:0;
+  box-sizing:border-box;
+  pointer-events:none;
+  opacity:0;
+  z-index:0;
+  transition:transform var(--t-base) var(--e-out),
+             width var(--t-base) var(--e-out),
+             height var(--t-base) var(--e-out),
+             opacity var(--t-fast) ease;
+}
+.tab-ind.on{opacity:1}
+/* Set for the one frame a marker is planted rather than moved - a bar that
+   was rebuilt, or one being seen for the first time. */
+.tab-ind.no-anim{transition:none}
+
+/* A --pill marker sits BEHIND its tab, so the tabs need a layer of their own
+   or the white tile would cover the label it is meant to sit under. */
+.lp-isb-tab,.mod-tab,.seg-btn,.cs-page-tab,.cs-sub-tab,.prof-tab,.pm-user-subtab{position:relative;z-index:1}
+
+.tab-ind--box{border:1.5px solid var(--orange);border-radius:4px}
+.tab-ind--pill{background:var(--card);border-radius:8px;box-shadow:0 1px 3px rgba(15,23,42,.12)}
+.tab-ind--under{background:var(--orange);border-radius:2px}
+
+/* Markers off. Colour and weight stay - see the note above. */
+.mod-tab.active,.seg-btn.active{background:transparent;box-shadow:none}
+.cs-page-tab.active,.cs-sub-tab.active,.prof-tab.active,.pm-user-subtab.active{border-bottom-color:transparent}
+
+@media (prefers-reduced-motion:reduce){
+  .tab-ind{transition:opacity var(--t-fast) ease}
+}
+
+/* My Profile swaps only .prof-tab-body when a tab is clicked - the hero card
+   and the bar above it are never rebuilt. Without this the new section would
+   simply appear, which after a page that used to repaint entirely reads as
+   nothing having happened. Same curve as a page entering, half the travel:
+   this is a section changing inside a page, not a page arriving. */
+@keyframes m-tabbody-in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+/* `backwards`, not `both`, for the stacking-context reason spelled out on
+   m-sec-in above - this body holds form controls with menus. */
+.prof-tab-body.prof-tab-in{animation:m-tabbody-in var(--t-base) var(--e-out) backwards}
+
+/* ── 7. FEEDBACK ──────────────────────────────────────────────────────────
+   The three ways the app tells you something happened.                    */
+
+/* a. Toast. Already animates; this only re-times it onto the shared curves. */
+.toast{animation:toastIn var(--t-base) var(--e-out) both}
+.toast.toast-leaving{animation:toastOut var(--t-fast) var(--e-in-out) forwards}
+
+/* b. Row flash. After an inline action changes a row in place, the row
+   itself confirms it - so the eye never has to leave the row to find out
+   whether the click worked. Green for a positive result, red for a
+   negative one, matching the status tokens exactly. */
+/* Fading out to --cell-bg rather than to transparent: on a listing the last
+   cell is pinned over the scrolling columns, and a transparent pinned cell
+   lets them show through it for the length of the flash. --cell-bg is that
+   row's own current background (see css/quick-actions.css) and falls back to
+   transparent everywhere else, so every other table flashes as it always did. */
+@keyframes m-flash-ok{0%{background:var(--st-ok-bg)}100%{background:var(--cell-bg,transparent)}}
+@keyframes m-flash-bad{0%{background:var(--st-bad-bg)}100%{background:var(--cell-bg,transparent)}}
+@keyframes m-flash-info{0%{background:var(--st-info-bg)}100%{background:var(--cell-bg,transparent)}}
+@keyframes m-flash-idle{0%{background:var(--st-idle-bg)}100%{background:var(--cell-bg,transparent)}}
+tr.m-flash-ok>td{animation:m-flash-ok 900ms var(--e-out)}
+tr.m-flash-bad>td{animation:m-flash-bad 900ms var(--e-out)}
+tr.m-flash-info>td{animation:m-flash-info 900ms var(--e-out)}
+tr.m-flash-idle>td{animation:m-flash-idle 900ms var(--e-out)}
+
+/* c. Skeleton. For any surface waiting on data. */
+@keyframes m-shimmer{from{background-position:-320px 0}to{background-position:320px 0}}
+.m-skeleton{
+  background:linear-gradient(90deg,#eef1f5 0%,#f7f9fb 40%,#eef1f5 80%);
+  background-size:320px 100%;
+  animation:m-shimmer 1.2s linear infinite;
+  border-radius:6px;color:transparent!important;pointer-events:none;user-select:none;
+}
+
+/* A status badge that has just changed value pops once, then never again. */
+@keyframes m-badge-in{from{opacity:0;transform:scale(.86)}to{opacity:1;transform:none}}
+.lp-status-badge.m-changed,.status-pill.m-changed,.ct-sb-badge.m-changed{animation:m-badge-in var(--t-base) var(--e-spring)}
+
+/* ── 8. SCROLLING ─────────────────────────────────────────────────────────
+   Programmatic scrolls (tab into view, back-to-top on navigate) glide.
+   Wheel and trackpad are untouched by this - only scripted scrolls.       */
+.page-content,.lp-isb-body,.chat-area,.emp-sel-list,.np-list,.lp-isb-tabs{scroll-behavior:smooth}

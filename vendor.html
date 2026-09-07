@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sub-Contracting Portal</title>
+<meta name="description" content="See the material you are currently holding, when each challan is due back, and optionally tell us when you expect to return it.">
+<meta name="application-name" content="Sub-Contracting Portal">
+<meta name="theme-color" content="#ffffff">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="assets/logo.png">
+
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="css/buttons.css">
+<link rel="stylesheet" href="css/motion.css">
+<link rel="stylesheet" href="css/subcon.css">
+<style>
+  /* The external shell overrides the internal app's full-height lock: this
+     page scrolls normally, because it is a document, not an application
+     chrome with its own panes. */
+  body { overflow: auto; height: auto; }
+</style>
+</head>
+<body class="vp-body">
+
+<!-- The vendor's first question is "who is asking me?" — so the despatching
+     organisation leads the bar, and the signed-in vendor gets a proper account
+     block instead of a truncating pill.
+     There is deliberately no link back into the internal application. -->
+<div class="vp-bar">
+  <div class="vp-brand">
+    <img src="assets/logo.png" alt="" style="height:24px">
+    <span>L&amp;T Trichy Works</span>
+    <span class="vp-tag">Sub-Contracting Portal</span>
+  </div>
+  <div class="vp-acct" id="vp-acct"></div>
+</div>
+
+<div class="vp-main" id="vp-content"></div>
+<div id="toast-host"></div>
+
+<script src="js/rbac.js"></script>
+<script src="js/activity.js"></script>
+<script src="js/notify.js"></script>
+<script src="js/core.js"></script>
+<script src="js/data/masters.js"></script>
+<script src="js/ledger.js"></script>
+<script src="js/data/transactions.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/data/seed.js"></script>
+<!-- registerPage is a renderer concern the portal doesn't have; m06 is loaded
+     purely for buildChallanDocument, so the vendor can see the legal document
+     they are holding material against. -->
+<script>function registerPage(){}</script>
+<script src="js/pages/m06-documents.js"></script>
+<script src="js/pages/m08-vendor.js"></script>
+<script>
+/* The external shell does not use the internal renderer, so core.js's boot is
+   replaced here. Seeding runs as internal staff; the session then becomes the
+   external vendor, so anything raised from this page is attributed to them. */
+document.removeEventListener('DOMContentLoaded', boot);
+window.addEventListener('DOMContentLoaded', function () {
+  currentUserId = 'u-planner';
+  seedDemo();
+  var q = new URLSearchParams(location.search).get('vendor');
+  if (q && vendor(q).id) vendorId = q;
+  currentUserId = 'u-vendor';
+  renderVendorPortal();
+});
+</script>
+</body>
+</html>

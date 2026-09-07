@@ -1,0 +1,1014 @@
+/* ==========================================================================
+   SUB-CONTRACTING  —  only what the ADT design system has no equivalent for.
+
+   NOTHING HERE INVENTS A TOKEN.  Every colour, radius, duration and type size
+   resolves to a variable declared in main.css, buttons.css or motion.css.  If
+   a value below looks like a literal, it is a layout number (a width, a gap),
+   never a design decision.
+
+   The shape rule from main.css holds throughout:
+     PILL   (--r-status)  read-only state.  Never clickable.
+     SQUARE (--r-control) actionable.       Always clickable.
+     CARD   (--r-card)    a panel.
+   ========================================================================== */
+
+/* ── Topbar additions ───────────────────────────────────────────────────── */
+.tb-team {
+  font-size: var(--ds-caption);
+  color: var(--gray);
+  padding: 4px 10px;
+  background: var(--ol);
+  border-radius: var(--r-status);   /* read-only: which team you are acting in */
+  white-space: nowrap;
+}
+.tb-user-name { font-weight: 600; }
+.tb-user-pos {
+  font-size: var(--ds-micro);
+  font-weight: 600;
+  color: var(--gray);
+  background: var(--ol);
+  padding: 2px 7px;
+  border-radius: var(--r-status);
+  letter-spacing: .2px;
+}
+
+/* ── Role switcher ──────────────────────────────────────────────────────────
+   Grouped by Team, because Team is what actually grants access — seeing two
+   people under one heading is what makes the per-Team model legible. */
+.rs-head {
+  font-size: var(--ds-micro);
+  font-weight: 700;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  color: var(--gray);
+  padding: 8px 10px 6px;
+}
+.rs-group { padding-bottom: 4px; }
+.rs-group + .rs-group { border-top: 1px solid var(--border); padding-top: 6px; margin-top: 2px; }
+.rs-group-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  font-size: var(--ds-caption);
+  font-weight: 600;
+  color: var(--navy);
+  padding: 6px 10px 4px;
+}
+.rs-code {
+  font-size: var(--ds-micro);
+  font-weight: 600;
+  color: var(--gray);
+  background: var(--ol);
+  padding: 1px 6px;
+  border-radius: var(--r-status);
+}
+.rs-avatar {
+  width: 26px; height: 26px; flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--ol);
+  color: var(--orange);
+  display: flex; align-items: center; justify-content: center;
+  font-size: var(--ds-micro); font-weight: 700;
+}
+.rs-who { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.rs-name { font-size: var(--ds-body); font-weight: 500; color: var(--navy); }
+.rs-pos  { font-size: var(--ds-micro); color: var(--gray); }
+/* The row you are already on. A left rail, the same signal a selected table
+   row uses, so "this is the one you are looking at" reads the same everywhere. */
+.rs-current { background: var(--row-sel); box-shadow: inset 3px 0 0 var(--row-sel-rail); }
+.rs-current:hover { background: var(--row-sel-hover); }
+
+/* ── Status badge ───────────────────────────────────────────────────────────
+   The only sanctioned status indicator. Five tones, one meaning per hue.
+   Pill shape: it is read-only and never clickable. */
+.sb-st {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: var(--r-status);
+  font-size: var(--ds-micro);
+  font-weight: 600;
+  line-height: 1.7;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+.sb-st-ok   { background: var(--st-ok-bg);   color: var(--st-ok-fg);   border-color: var(--st-ok-bd); }
+.sb-st-wait { background: var(--st-wait-bg); color: var(--st-wait-fg); border-color: var(--st-wait-bd); }
+.sb-st-bad  { background: var(--st-bad-bg);  color: var(--st-bad-fg);  border-color: var(--st-bad-bd); }
+.sb-st-info { background: var(--st-info-bg); color: var(--st-info-fg); border-color: var(--st-info-bd); }
+.sb-st-idle { background: var(--st-idle-bg); color: var(--st-idle-fg); border-color: var(--st-idle-bd); }
+
+/* Commercial value withheld from this position (RBAC mandatory rule 7).
+   Deliberately NOT a status colour — nothing is wrong, the reader simply is
+   not cleared for it, and an amber or red dash would imply a problem. */
+.masked { cursor: help; user-select: none; font-style: italic; }
+
+/* ── Activity log panel ─────────────────────────────────────────────────────
+   Read-only by construction — there is no control here, and there never
+   should be. */
+.act-panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+  overflow: hidden;
+}
+.act-head {
+  display: flex; align-items: center; gap: 8px;
+  padding: 13px 16px;
+  font-size: var(--ds-title);
+  font-weight: 600;
+  color: var(--navy);
+  border-bottom: 1px solid var(--border);
+}
+.act-count {
+  font-size: var(--ds-micro);
+  font-weight: 600;
+  color: var(--gray);
+  background: var(--ol);
+  padding: 1px 7px;
+  border-radius: var(--r-status);
+}
+.act-empty { padding: 22px 16px; font-size: var(--ds-body); color: var(--gray); }
+.act-list { list-style: none; margin: 0; padding: 6px 0; max-height: 420px; overflow-y: auto; }
+.act-item { display: flex; gap: 12px; padding: 10px 16px; position: relative; }
+/* The rail: one continuous line down the column of dots, so the entries read
+   as a sequence rather than a stack of cards. */
+.act-item::before {
+  content: ''; position: absolute;
+  left: 21px; top: 0; bottom: 0;
+  width: 1px; background: var(--border);
+}
+.act-item:first-child::before { top: 18px; }
+.act-item:last-child::before  { bottom: calc(100% - 18px); }
+.act-dot {
+  width: 9px; height: 9px; flex-shrink: 0;
+  margin-top: 5px; margin-left: 1px;
+  border-radius: 50%;
+  background: var(--card);
+  border: 2px solid var(--border);
+  position: relative; z-index: 1;
+}
+/* A status change is the thing you scan for, so only that gets the accent. */
+.act-item-change .act-dot { border-color: var(--orange); background: var(--orange); }
+.act-body { flex: 1; min-width: 0; }
+.act-row1 { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.act-action { font-size: var(--ds-body); font-weight: 600; color: var(--navy); }
+.act-time { font-size: var(--ds-micro); color: var(--gray); white-space: nowrap; flex-shrink: 0; }
+.act-row2 { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 3px; }
+.act-move {
+  font-size: var(--ds-micro); font-weight: 500; color: var(--navy);
+  background: var(--ol); padding: 1px 7px; border-radius: var(--r-status);
+}
+.act-arrow { color: var(--gray); }
+.act-reason {
+  font-size: var(--ds-micro); font-weight: 500;
+  color: var(--st-wait-fg); background: var(--st-wait-bg);
+  padding: 1px 7px; border-radius: var(--r-status);
+}
+.act-remarks { font-size: var(--ds-caption); color: var(--gray); font-style: italic; }
+.act-row3 { font-size: var(--ds-caption); color: var(--gray); margin-top: 3px; }
+.act-pos { color: #9aa3ae; }
+.act-pos::before { content: '· '; }
+
+/* ── Placeholder for unbuilt screens ────────────────────────────────────────
+   Removed module by module. It states which module owns the screen, so an
+   incomplete build is self-describing instead of looking broken. */
+.ph {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+  padding: 40px;
+  max-width: 640px;
+}
+.ph-code {
+  display: inline-block;
+  font-size: var(--ds-micro); font-weight: 700; letter-spacing: 1px;
+  color: var(--gray); background: var(--ol);
+  padding: 3px 9px; border-radius: var(--r-status);
+  margin-bottom: 14px;
+}
+.ph-title { font-size: var(--ds-h1); font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+.ph-note { font-size: var(--ds-body); color: var(--gray); line-height: 1.6; max-width: 46ch; }
+/* Exactly two columns for exactly four facts, so the last row is always full.
+   An auto-fit track count leaves an empty cell, and because the 1px "rules"
+   here are really the container's background showing through the gap, that
+   empty cell renders as a block of border colour rather than as nothing. */
+.ph-meta {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px; background: var(--border);
+  border: 1px solid var(--border); border-radius: var(--r-control);
+  overflow: hidden; margin-top: 26px;
+}
+.ph-meta > div { background: var(--card); padding: 12px 14px; }
+@media (max-width: 620px) { .ph-meta { grid-template-columns: minmax(0, 1fr); } }
+.ph-meta span {
+  display: block;
+  font-size: var(--ds-micro); font-weight: 600; letter-spacing: .5px;
+  text-transform: uppercase; color: var(--gray); margin-bottom: 4px;
+}
+.ph-meta b { font-size: var(--ds-body); font-weight: 600; color: var(--navy); }
+
+/* ── Toast ──────────────────────────────────────────────────────────────────
+   Confirmations only. A blocked action explains itself where it was blocked,
+   never in a message that floats away before it is read. */
+#toast-host { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); z-index: 400; }
+.toast {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--navy); color: #fff;
+  padding: 11px 12px 11px 18px;
+  border-radius: var(--r-control);
+  box-shadow: 0 8px 30px rgba(15, 23, 42, .22);
+  font-size: var(--ds-body); font-weight: 500;
+  animation: toastIn var(--t-base) var(--e-out);
+}
+.toast-msg { white-space: nowrap; }
+.toast-close {
+  width: 22px; height: 22px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  border: 0; background: rgba(255, 255, 255, .14); color: #fff;
+  border-radius: var(--r-control);
+  font-size: 15px; line-height: 1; cursor: pointer;
+  transition: background var(--t-micro) var(--e-out);
+}
+.toast-close:hover { background: rgba(255, 255, 255, .28); }
+@keyframes toastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .toast { animation: none; } }
+
+/* ==========================================================================
+   SHARED COMPONENTS  (M-01 onward)
+   Every value below resolves to an ADT token. Literals are layout only.
+   ========================================================================== */
+
+/* ── Page header ────────────────────────────────────────────────────────── */
+.pg-head { display:flex; align-items:flex-start; justify-content:space-between; gap:20px; margin-bottom:20px; flex-wrap:wrap; }
+.pg-title { font-size:var(--ds-h1); font-weight:700; color:var(--navy); letter-spacing:-.2px; }
+.pg-sub { font-size:var(--ds-body); color:var(--gray); margin-top:5px; max-width:70ch; line-height:1.55; }
+.pg-actions { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+
+/* ── Card ───────────────────────────────────────────────────────────────── */
+.card { background:var(--card); border:1px solid var(--border); border-radius:var(--r-card); margin-bottom:16px; overflow:hidden; }
+.card-head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:13px 18px; border-bottom:1px solid var(--border); }
+.card-title { font-size:var(--ds-title); font-weight:600; color:var(--navy); }
+.card-actions { display:flex; align-items:center; gap:8px; }
+.card-body { padding:18px; }
+.card-body > .listing-table { margin:-18px; width:calc(100% + 36px); }
+
+/* ── Read-only field grid ───────────────────────────────────────────────── */
+.fgrid { display:grid; grid-template-columns:repeat(var(--fg-cols,3), minmax(0,1fr)); gap:16px 22px; }
+.fgrid-cell { display:flex; flex-direction:column; gap:4px; min-width:0; }
+.fgrid-label { font-size:var(--ds-micro); font-weight:600; letter-spacing:.5px; text-transform:uppercase; color:var(--gray); }
+.fgrid-value { font-size:var(--ds-body); font-weight:500; color:var(--navy); word-break:break-word; }
+.fg-none { color:#b6bcc5; font-weight:400; font-style:italic; }
+@media (max-width:900px){ .fgrid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:560px){ .fgrid { grid-template-columns:minmax(0,1fr); } }
+
+/* ── Form fields ────────────────────────────────────────────────────────────
+   Shape says what a control does: typeable is fully rounded, pick-or-press is
+   square-cornered. The textarea stays square — a pill would eat the text. */
+.form-grid { display:grid; grid-template-columns:repeat(var(--f-cols,4), minmax(0,1fr)); gap:16px 18px; }
+@media (max-width:1100px){ .form-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:600px){ .form-grid { grid-template-columns:minmax(0,1fr); } }
+.ff { display:flex; flex-direction:column; gap:5px; min-width:0; }
+.ff-span2 { grid-column:span 2; }
+.ff-label { font-size:var(--ds-caption); font-weight:600; color:var(--navy); }
+.ff-req { color:var(--st-bad-fg); font-style:normal; margin-left:3px; }
+.ff-hint { font-size:var(--ds-micro); color:var(--gray); }
+.inp {
+  height:34px; padding:0 14px; width:100%;
+  border:1px solid var(--border); border-radius:var(--r-input);
+  background:var(--card); color:var(--navy);
+  font-family:inherit; font-size:var(--ds-body);
+  transition:border-color var(--t-fast) var(--e-out);
+}
+.inp:hover { border-color:#cbd2da; }
+.inp:focus { outline:none; border-color:var(--btn-accent); box-shadow:0 0 0 3px rgba(26,26,26,.07); }
+.inp:disabled { background:var(--ol); color:var(--gray); cursor:not-allowed; }
+.inp-num { text-align:right; font-variant-numeric:tabular-nums; }
+.inp-area { height:auto; padding:10px 14px; border-radius:var(--r-control); resize:vertical; line-height:1.5; }
+.cs-sm .custom-select-trigger { height:32px; font-size:var(--ds-caption); }
+
+/* Toggle — a control, so square-cornered. */
+.tgl {
+  display:inline-flex; align-items:center; gap:9px;
+  height:34px; padding:0 14px 0 6px;
+  border:1px solid var(--border); border-radius:var(--r-control);
+  background:var(--card); cursor:pointer;
+  font-family:inherit; font-size:var(--ds-body); font-weight:500; color:var(--gray);
+  transition:border-color var(--t-fast) var(--e-out), color var(--t-fast) var(--e-out);
+}
+.tgl:hover { border-color:var(--btn-accent); color:var(--btn-accent); }
+.tgl-knob { width:32px; height:18px; border-radius:9px; background:#e5e7eb; position:relative; flex-shrink:0; transition:background var(--t-fast) var(--e-out); }
+.tgl-knob::after { content:''; position:absolute; top:2px; left:2px; width:14px; height:14px; border-radius:50%; background:var(--card); transition:left var(--t-fast) var(--e-out); }
+.tgl.on { color:var(--navy); }
+.tgl.on .tgl-knob { background:var(--orange); }
+.tgl.on .tgl-knob::after { left:16px; }
+
+/* ── Validation ─────────────────────────────────────────────────────────── */
+.errbox { background:var(--st-bad-bg); border:1px solid var(--st-bad-bd); border-radius:var(--r-control); padding:13px 16px; margin-bottom:16px; }
+.errbox-head { font-size:var(--ds-body); font-weight:600; color:var(--st-bad-fg); margin-bottom:6px; }
+.errbox-list { margin:0; padding-left:18px; }
+.errbox-list li { font-size:var(--ds-caption); color:var(--navy); margin-bottom:3px; line-height:1.5; }
+.notice { padding:11px 15px; border-radius:var(--r-control); font-size:var(--ds-body); line-height:1.55; margin-bottom:16px; border:1px solid transparent; }
+.notice-info { background:var(--st-info-bg); color:#1e3a8a; border-color:var(--st-info-bd); }
+.notice-wait { background:var(--st-wait-bg); color:var(--st-wait-fg); border-color:var(--st-wait-bd); }
+.notice-ok   { background:var(--st-ok-bg);   color:#14532d;          border-color:var(--st-ok-bd); }
+.notice-idle { background:var(--ol);         color:var(--gray);      border-color:var(--border); }
+/* The overdue banner was switched to this tone and the tone did not exist, so
+   the app's loudest warning rendered as an unstyled sentence floating above
+   the tiles — worse than the amber it replaced. */
+.notice-bad  { background:var(--st-bad-bg);  color:#7f1d1d;          border-color:var(--st-bad-bd); }
+
+/* ── Stage bar ──────────────────────────────────────────────────────────── */
+.stagebar { display:flex; align-items:center; gap:0; background:var(--card); border:1px solid var(--border); border-radius:var(--r-card); padding:14px 18px; margin-bottom:16px; overflow-x:auto; }
+.stage { display:flex; align-items:center; gap:8px; flex:1; min-width:112px; position:relative; }
+.stage + .stage::before { content:''; position:absolute; left:-12px; right:calc(100% - 4px); height:1px; background:var(--border); }
+.stage-dot {
+  width:24px; height:24px; flex-shrink:0; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:var(--ds-micro); font-weight:700;
+  background:var(--ol); color:var(--gray); border:1px solid var(--border);
+}
+.stage-label { font-size:var(--ds-caption); font-weight:500; color:var(--gray); white-space:nowrap; }
+.stage-done .stage-dot { background:var(--st-ok-bg); color:var(--st-ok-fg); border-color:var(--st-ok-bd); }
+.stage-done .stage-label { color:var(--navy); }
+.stage-now .stage-dot { background:var(--orange); color:#fff; border-color:var(--orange); }
+.stage-now .stage-label { color:var(--navy); font-weight:600; }
+
+/* ── Modal ──────────────────────────────────────────────────────────────── */
+.modal-back { position:fixed; inset:0; background:rgba(15,23,42,.42); z-index:500; display:flex; align-items:center; justify-content:center; padding:24px; animation:fadeIn var(--t-base) var(--e-out); }
+.modal { background:var(--card); border-radius:var(--r-card); width:100%; max-width:520px; max-height:88vh; display:flex; flex-direction:column; box-shadow:0 24px 70px rgba(15,23,42,.28); animation:modalIn var(--t-base) var(--e-out); }
+@keyframes modalIn { from { opacity:0; transform:translateY(12px) scale(.985); } to { opacity:1; transform:none; } }
+.modal-head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:16px 20px; border-bottom:1px solid var(--border); }
+.modal-title { font-size:var(--ds-h2); font-weight:700; color:var(--navy); }
+.modal-x { width:28px; height:28px; display:flex; align-items:center; justify-content:center; border:0; background:var(--ol); color:var(--gray); border-radius:var(--r-control); font-size:19px; line-height:1; cursor:pointer; transition:background var(--t-micro) var(--e-out), color var(--t-micro) var(--e-out); }
+.modal-x:hover { background:var(--btn-tint-bg); color:var(--btn-accent); }
+.modal-body { padding:20px; overflow-y:auto; display:flex; flex-direction:column; gap:16px; }
+.modal-foot { display:flex; align-items:center; justify-content:flex-end; gap:8px; padding:14px 20px; border-top:1px solid var(--border); }
+.modal-note { font-size:var(--ds-micro); font-weight:600; letter-spacing:.5px; text-transform:uppercase; color:var(--gray); }
+.modal-msg { font-size:var(--ds-body); color:var(--navy); line-height:1.6; }
+
+/* ── Listing extras ─────────────────────────────────────────────────────── */
+.filter-cell { display:flex; flex-direction:column; gap:4px; }
+.filter-cap { font-size:var(--ds-micro); font-weight:600; letter-spacing:.4px; text-transform:uppercase; color:var(--gray); }
+.lst-empty { padding:44px 20px; text-align:center; font-size:var(--ds-body); color:var(--gray); }
+.listing-table th.ta-right, .listing-table td.ta-right { text-align:right; }
+/* .ta-center was scoped to .listing-table only, and every use in the app is on
+   a .lines table — so the Task Profile's "Manufacturing" group header and all
+   four permission columns silently fell back to left-aligned. */
+.listing-table th.ta-center, .listing-table td.ta-center,
+.lines th.ta-center, .lines td.ta-center,
+.doc-table th.ta-center, .doc-table td.ta-center { text-align:center; }
+.listing-table td.ta-right { font-variant-numeric:tabular-nums; }
+.listing-table tbody tr { transition:var(--row-fade); }
+.listing-table tbody tr[tabindex] { cursor:pointer; }
+.listing-table tbody tr[tabindex]:hover { background:var(--row-hover); }
+.listing-table tbody tr.row-sel { background:var(--row-sel); box-shadow:inset 3px 0 0 var(--row-sel-rail); }
+.listing-table tbody tr.row-sel:hover { background:var(--row-sel-hover); }
+.listing-stat.active { background:var(--row-sel); box-shadow:inset 0 -3px 0 var(--row-sel-rail); }
+.listing-stat[tabindex] { cursor:pointer; }
+.listing-stat[tabindex]:hover { background:var(--row-hover); }
+.mono { font-variant-numeric:tabular-nums; }
+.lnk { color:var(--navy); font-weight:600; text-decoration:none; border-bottom:1px solid var(--border); }
+.dim { color:var(--gray); }
+.nowrap { white-space:nowrap; }
+
+/* ── Line-item grid ─────────────────────────────────────────────────────── */
+.lines { width:100%; border-collapse:collapse; font-size:var(--ds-body); }
+.lines th { text-align:left; font-size:var(--ds-micro); font-weight:600; letter-spacing:.5px; text-transform:uppercase; color:var(--gray); padding:9px 10px; border-bottom:1px solid var(--border); background:var(--light); white-space:nowrap; }
+.lines td { padding:8px 10px; border-bottom:1px solid #f1f3f5; vertical-align:middle; }
+.lines tr:last-child td { border-bottom:0; }
+.lines .ta-right { text-align:right; font-variant-numeric:tabular-nums; }
+.lines-wrap { overflow-x:auto; border:1px solid var(--border); border-radius:var(--r-control); }
+.line-x { width:26px; height:26px; display:flex; align-items:center; justify-content:center; border:0; background:transparent; color:var(--gray); border-radius:var(--r-control); cursor:pointer; font-size:16px; line-height:1; transition:background var(--t-micro) var(--e-out), color var(--t-micro) var(--e-out); }
+.line-x:hover { background:var(--btn-ghost-bg); color:var(--btn-accent); }
+
+/* ── Printable documents ────────────────────────────────────────────────────
+   Built to the mockups embedded in the BRD — DN-000871 and CHN-33-000442. */
+.doc { background:var(--card); border:1px solid var(--border); border-radius:var(--r-card); padding:30px 34px; max-width:900px; }
+.doc-title { font-size:var(--ds-h1); font-weight:700; color:var(--navy); text-align:center; letter-spacing:.3px; }
+.doc-sub { font-size:var(--ds-caption); color:var(--gray); text-align:center; margin-top:5px; }
+.doc-sec { font-size:var(--ds-micro); font-weight:700; letter-spacing:.9px; text-transform:uppercase; color:var(--orange); margin:24px 0 10px; }
+.doc-parties { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+.doc-party { border:1px dashed var(--border); border-radius:var(--r-control); padding:12px 14px; }
+.doc-party-cap { font-size:var(--ds-micro); font-weight:600; letter-spacing:.5px; text-transform:uppercase; color:var(--gray); margin-bottom:5px; }
+.doc-party-body { font-size:var(--ds-body); color:var(--navy); line-height:1.5; }
+.doc-table { width:100%; border-collapse:collapse; font-size:var(--ds-body); margin-top:6px; }
+.doc-table th { text-align:left; font-size:var(--ds-micro); font-weight:600; letter-spacing:.5px; text-transform:uppercase; color:var(--gray); padding:9px 12px; background:var(--light); border-bottom:1px solid var(--border); }
+.doc-table td { padding:10px 12px; border-bottom:1px solid #f1f3f5; color:var(--navy); }
+.doc-table .ta-right { text-align:right; font-variant-numeric:tabular-nums; }
+.doc-foot { margin-top:22px; font-size:var(--ds-caption); color:var(--gray); display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+
+/* ── Balance sheet ──────────────────────────────────────────────────────────
+   The Issue-Material Balance Sheet from the BRD's third mockup. A non-zero
+   balance is what blocks closure, so it is the one number that changes tone. */
+.bal-zero { color:var(--st-ok-fg); font-weight:600; }
+/* An open balance is this page's stated NORMAL condition — "nothing closes
+   while material is unaccounted for" — so red, which means settled-and-negative,
+   overstated it on five rows out of seven while the sibling Outstanding column
+   sat in plain navy. Weight carries it; the colour is reserved for a genuine
+   over-issue, where the balance has gone negative. */
+.bal-open { color:var(--navy); font-weight:700; }
+.bal-neg  { color:var(--st-bad-fg); font-weight:700; }
+.bal-note { font-size:var(--ds-caption); color:var(--gray); margin-top:10px; }
+
+/* ── Queue / dashboard tiles ────────────────────────────────────────────── */
+/* auto-FILL and a max track, so a tile is the same size whether a role has two
+   of them or four — auto-fit stretched two tiles to 600px each, leaving a
+   22.5px number adrift in an empty card. */
+.tiles { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,260px)); gap:14px; margin-bottom:20px; justify-content:start; }
+.tile { background:var(--card); border:1px solid var(--border); border-radius:var(--r-card); padding:18px 20px; cursor:pointer; transition:border-color var(--t-fast) var(--e-out), transform var(--t-fast) var(--e-out); }
+.tile:hover { border-color:#cbd2da; transform:translateY(-1px); }
+.tile-label { font-size:var(--ds-label); font-weight:600; letter-spacing:.5px; text-transform:uppercase; color:var(--gray); display:block; margin-bottom:8px; }
+.tile-val { font-size:var(--ds-metric); font-weight:700; color:var(--navy); line-height:1.15; }
+.tile-sub { font-size:var(--ds-caption); color:var(--gray); margin-top:5px; display:block; }
+
+/* ── Split layout: detail beside activity ───────────────────────────────── */
+.split { display:grid; grid-template-columns:minmax(0,1fr) 340px; gap:16px; align-items:start; }
+@media (max-width:1080px){ .split { grid-template-columns:minmax(0,1fr); } }
+
+/* ── Vendor portal shell ────────────────────────────────────────────────────
+   Deliberately its own surface. An external user should never see the shape
+   of the internal application, so this is not the internal sidebar with items
+   hidden — there is no sidebar at all. */
+.vp-body { background:var(--light); min-height:100vh; }
+.vp-bar { height:56px; background:var(--card); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 24px; }
+.vp-brand { display:flex; align-items:center; gap:10px; font-size:var(--ds-h2); font-weight:700; color:var(--navy); }
+.vp-tag { font-size:var(--ds-micro); font-weight:600; color:var(--gray); background:var(--ol); padding:2px 9px; border-radius:var(--r-status); }
+.vp-main { max-width:1080px; margin:0 auto; padding:28px 24px 80px; }
+.vp-days { font-weight:700; font-variant-numeric:tabular-nums; }
+.vp-days-warn { color:var(--st-wait-fg); }
+.vp-days-over { color:var(--st-bad-fg); }
+/* "No ASN raised" is a NEUTRAL state, not a warning. The vendor is under no
+   obligation to send one, and amber here would claim somebody is late. */
+.vp-none { color:var(--gray); font-style:italic; }
+
+/* ── Late fixes found in review ─────────────────────────────────────────── */
+
+/* A link wearing a button class is still a link, and the button system never
+   resets text-decoration — so every anchor-button rendered underlined. */
+a.btn-outline, a.btn-primary, a.btn-secondary { text-decoration:none; }
+
+/* Document identifiers must never break mid-token. "SUB-000318" wrapping to
+   "SUB-" / "000318" reads as two values, and these columns are exactly what a
+   user scans down to find a record. */
+.listing-table td b, .listing-table td .mono,
+.lines td b, .lines td .mono,
+.doc-table td .mono { white-space:nowrap; }
+
+/* An id that genuinely cannot fit gets a scrollbar on its table rather than a
+   broken word — the listing card already scrolls horizontally. */
+.listing-table { table-layout:auto; }
+
+/* ==========================================================================
+   REVIEW FIXES — see the build review for the finding behind each block.
+   ========================================================================== */
+
+/* F01 · The filter bar was 166px tall with a 110px dead band under every
+   control. main.css sets `.filter-row .custom-select{flex:0 0 150px}` for a
+   select that is a DIRECT flex item of the horizontal row. Wrapping each one
+   in a column-direction .filter-cell made that basis resolve against the
+   CROSS axis — so 150px became a HEIGHT. The cell owns the width now, and the
+   select inside it is sized normally. */
+.filter-row { align-items:flex-end; gap:10px; }
+.filter-row .filter-cell { flex:1 1 150px; max-width:200px; min-width:0; }
+.filter-row .filter-cell .custom-select { flex:0 0 auto; width:100%; }
+/* Below ~1200px the filter row and the stat strip were competing for one line,
+   the row lost, and three filters stacked one per line — a 250px column, taller
+   than the dead band this fix was written to remove. They stack cleanly now. */
+@media (max-width:1200px) {
+  .listing-top { flex-wrap:wrap; }
+  .listing-filters { flex:1 1 100%; order:2; }
+  .listing-stats { order:1; align-self:stretch; }
+}
+/* Stat tiles ARE filters, so clipping them removes function, not chrome. */
+.listing-stats { overflow-x:auto; overflow-y:hidden; }
+@media (max-width:760px) { .listing-stats { align-self:stretch; } }
+/* main.css sets min-height:40px on the trigger, which beat .cs-sm's height and
+   left 40px selects beside 28px buttons. Both properties now agree. */
+.cs-sm .custom-select-trigger { min-height:32px; height:32px; }
+.filter-row .filter-search, .filter-row .filter-reset { height:32px; }
+
+/* F04 · main.css centres and bolds the first cell of every listing table —
+   written for an "S No" column. Only the three reports have one. Everywhere
+   else the first column is a name or an id and must read left. */
+.listing-table:not(.has-sno) th:first-child,
+.listing-table:not(.has-sno) td:first-child { text-align:left; width:auto; }
+
+/* F03 · The nowrap guard was a descendant selector; the reports put the class
+   on the cell itself, which is exactly where ids were breaking mid-token. */
+.listing-table td.mono, .lines td.mono, .doc-table td.mono { white-space:nowrap; }
+
+/* F20 · One table language. `.lines` was a parallel component with its own
+   header treatment, stacked 30px from `.listing-table` on the vendor portal. */
+.lines th { font-size:var(--ds-micro); background:var(--light); }
+.listing-table th { font-size:var(--ds-micro); text-transform:uppercase; letter-spacing:.5px; color:var(--gray); font-weight:600; }
+.listing-table td { font-size:var(--ds-body); }
+
+/* F31 · A bordered box inside a bordered card drew two concentric rounded
+   edges at two radii. The card's own edge does the framing. */
+.card .lines-wrap { border:0; border-radius:0; }
+
+/* F25 · The order value is the only money on the screen and had no styles at
+   all — it inherited body text beside a twelve-cell grid. */
+.po-total {
+  margin-top:18px; padding-top:14px; border-top:1px solid var(--border);
+  display:flex; align-items:baseline; justify-content:space-between; gap:12px;
+  font-size:var(--ds-caption); font-weight:600; letter-spacing:.4px;
+  text-transform:uppercase; color:var(--gray);
+}
+.po-total b { font-size:var(--ds-metric); font-weight:700; color:var(--navy); letter-spacing:-.5px; text-transform:none; }
+
+/* F25 · The Add/Edit Team screen was the most unstyled in the build — the
+   whole permission matrix and data profile had no rules whatsoever. */
+.tp th { vertical-align:bottom; }
+.tp-group { border-bottom:1px solid var(--border); }
+.tp-sec td {
+  background:var(--light); font-size:var(--ds-micro); font-weight:700;
+  letter-spacing:.8px; text-transform:uppercase; color:var(--gray);
+  padding:8px 10px;
+}
+.tp-off td:first-child { color:var(--gray); }
+.tp input[type=checkbox] { width:15px; height:15px; accent-color:var(--orange); cursor:pointer; }
+.tp input[type=checkbox]:disabled { cursor:not-allowed; opacity:.4; }
+.tp-all {
+  display:inline-flex; align-items:center; gap:7px;
+  font-size:var(--ds-caption); font-weight:600; color:var(--navy); cursor:pointer;
+}
+.tp-all input { width:15px; height:15px; accent-color:var(--orange); cursor:pointer; }
+.dp-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:10px 20px; }
+.dp-item {
+  display:flex; align-items:center; gap:9px;
+  font-size:var(--ds-body); color:var(--navy); cursor:pointer;
+  padding:7px 10px; border:1px solid var(--border); border-radius:var(--r-control);
+  transition:border-color var(--t-fast) var(--e-out);
+}
+.dp-item:hover { border-color:#cbd2da; }
+.dp-item input { width:15px; height:15px; accent-color:var(--orange); cursor:pointer; }
+
+/* F21 · Two invented greys, both below legible contrast, in a file whose own
+   header says it invents no values. --gray is 4.86:1 and passes. */
+.act-pos { color:var(--gray); }
+.fg-none { color:var(--gray); font-weight:400; font-style:italic; }
+
+/* F19 · A neutral chip for things that are NOT lifecycle status — a flag, an
+   attribute, a date. The five status triples mean one thing each and lending
+   them to a boolean drains that meaning. */
+.chip {
+  display:inline-block; padding:2px 9px; border-radius:var(--r-status);
+  font-size:var(--ds-micro); font-weight:600; line-height:1.7; white-space:nowrap;
+  background:var(--ol); color:var(--gray); border:1px solid var(--border);
+}
+.chip-on { background:var(--card); color:var(--navy); border-color:#cbd2da; }
+
+/* F27 · Notices ran the full page width — ~150 characters on a wide screen. */
+.notice { max-width:88ch; }
+.pg-sub { max-width:74ch; }
+
+/* N5 / F16 · A listing with no filters justified its lone stat strip to the
+   far edge, leaving ~900px of empty header. Four header rhythms across one
+   archetype; now one. */
+.listing-top:not(:has(.filter-cell)) { justify-content:flex-start; }
+.listing-top:not(:has(.filter-cell)) .listing-filters { display:none; }
+
+/* F16 · Stat tiles are filters. Give them a resting affordance so they read as
+   operable before the pointer arrives. */
+.listing-stat { position:relative; }
+/* Visible AT REST, which is what "reads as operable before the pointer
+   arrives" has to mean — it was painted transparent until hover, so a
+   clickable strip and an inert one were pixel-identical. */
+.listing-stat[tabindex]::after {
+  content:''; position:absolute; left:14px; right:14px; bottom:0; height:2px;
+  background:var(--border); transition:background var(--t-fast) var(--e-out);
+}
+.listing-stat[tabindex]:hover::after { background:var(--gray); }
+.listing-stat.active::after { background:var(--row-sel-rail); }
+.listing-stat:focus-visible, .tile:focus-visible,
+.listing-table tbody tr:focus-visible { outline:2px solid var(--btn-accent); outline-offset:-2px; }
+
+/* F29 · A fourteen-column report squeezed into 1200px wrapped AND scrolled,
+   which is the worst of both. 1180px was still not enough — titles and team
+   names wrapped to four lines. The cells hold their line and the container
+   does the scrolling, which is what the horizontal scrollbar is for. */
+/* ── No horizontal scrolling anywhere ───────────────────────────────────────
+   Forcing a min-width made tables scroll sideways instead of wrapping, which
+   traded one problem for another: a column you have to drag to reach is a
+   column most people never read. Tables now FIT, and the few cells that carry
+   long prose truncate with an ellipsis and keep the full value in `title`.
+   Nothing on any screen scrolls horizontally. */
+.listing-card .listing-table,
+.listing-card .listing-table.rpt { min-width:0; width:100%; }
+.listing-table, .lines, .doc-table { table-layout:auto; }
+
+/* Identifiers, quantities, dates and status pills always hold their line. */
+.listing-table td.mono, .listing-table td b, .listing-table td .mono,
+.listing-table td .sb-st, .listing-table td .chip,
+.listing-table th, .lines td.mono, .lines th { white-space:nowrap; }
+
+/* Prose cells give way first, rather than the whole table growing. */
+.listing-table td.tx, .lines td.tx {
+  max-width:22ch; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+/* Above the restack breakpoint the report is a fourteen-column table, and the
+   only way fourteen columns fit without a sideways drag is a fixed layout that
+   divides the width evenly and truncates what will not fit. */
+.listing-table.rpt { table-layout:fixed; }
+.listing-table.rpt td, .listing-table.rpt th {
+  font-size:var(--ds-caption); padding:9px 8px;
+  overflow:hidden; text-overflow:ellipsis;
+}
+.listing-table.rpt td.tx { max-width:none; }
+
+/* The Activity log's reason and actor cells carry free text and were the only
+   thing pushing that table past its container between 1100 and 1400. */
+.listing-table td.tx-sm { max-width:16ch; overflow:hidden; text-overflow:ellipsis; }
+
+/* Above the restack breakpoint every listing uses a fixed layout, so the table
+   is exactly its container's width by construction and a long cell truncates
+   rather than pushing the table wider. Content-driven widths were the last
+   thing forcing a sideways scroll. */
+@media (min-width:1101px) {
+  .listing-card .listing-table:not(.rpt) { table-layout:fixed; }
+  .listing-card .listing-table:not(.rpt) td,
+  .listing-card .listing-table:not(.rpt) th { overflow:hidden; text-overflow:ellipsis; }
+}
+
+/* Belt and braces: no container may push the page sideways.
+   .vp-main is deliberately NOT in this list — including it overrode the
+   portal's own 1080px reading width and spread it edge-to-edge across a
+   1500px window. */
+.listing-card, .card, .lines-wrap, .page-content { max-width:100%; }
+.lines-wrap { overflow-x:visible; }
+body, .page-content { overflow-x:hidden; }
+
+/* ── Narrow widths: rows restack instead of scrolling ───────────────────────
+   Nine columns cannot fit a 480px content area, so below the breakpoint each
+   row becomes a labelled block. This is the only way to keep every column
+   READABLE without a sideways drag — a column you have to scroll to reach is
+   one most people never see.
+
+   Reports restack earlier because they carry fourteen columns. */
+@media (max-width:1100px) {
+  .listing-card { overflow-x:visible; }
+  .listing-table:not(.rpt) thead { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
+  .listing-table:not(.rpt) tbody tr {
+    display:block; padding:14px 16px; border-bottom:1px solid var(--border);
+  }
+  .listing-table:not(.rpt) tbody tr:last-child { border-bottom:0; }
+  .listing-table:not(.rpt) td {
+    display:flex; align-items:baseline; justify-content:space-between; gap:16px;
+    padding:4px 0; border:0; text-align:right !important; max-width:none;
+    white-space:normal; overflow:visible; text-overflow:clip;
+  }
+  .listing-table:not(.rpt) td::before {
+    content:attr(data-label);
+    font-size:var(--ds-micro); font-weight:600; letter-spacing:.5px;
+    text-transform:uppercase; color:var(--gray);
+    text-align:left; flex-shrink:0;
+  }
+  /* A cell with no heading — the row-action column — needs no label and sits
+     on its own line. */
+  .listing-table:not(.rpt) td[data-label=""]::before { content:none; }
+  .listing-table:not(.rpt) td[data-label=""] { justify-content:flex-end; padding-top:10px; }
+}
+@media (max-width:1400px) {
+  .listing-card .listing-table.rpt { display:block; }
+  .listing-table.rpt thead { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
+  .listing-table.rpt tbody, .listing-table.rpt tbody tr { display:block; }
+  .listing-table.rpt tbody tr { padding:14px 16px; border-bottom:1px solid var(--border); }
+  .listing-table.rpt td {
+    display:flex; align-items:baseline; justify-content:space-between; gap:16px;
+    padding:4px 0; border:0; text-align:right !important; max-width:none; white-space:normal;
+  }
+  .listing-table.rpt td::before {
+    content:attr(data-label); font-size:var(--ds-micro); font-weight:600;
+    letter-spacing:.5px; text-transform:uppercase; color:var(--gray);
+    text-align:left; flex-shrink:0;
+  }
+}
+
+/* The filter bar's Search is `background:#1e2530` in main.css — the same weight
+   as .btn-primary, so every listing screen showed two equally loud filled
+   buttons and the page's real action had to compete with "Search". */
+.filter-row .filter-search {
+  background:var(--card); color:var(--btn-ink); border:1px solid var(--btn-stroke);
+}
+.filter-row .filter-search:hover { background:var(--card); color:var(--btn-accent); border-color:var(--btn-accent); }
+
+/* F26 · The 340px activity column sat empty for 500-700px while the tables
+   beside it squeezed. Only the summary shares the row now. */
+.split { align-items:start; }
+.split-full { grid-column:1 / -1; }
+
+/* F24 · The topbar had no responsive handling at all: at 600px the vendor
+   portal button sat on top of the logo and the user name wrapped out of the
+   56px bar. Things drop in order of dispensability. */
+/* The name must never wrap inside a fixed 56px bar. Between 1181 and ~1330 the
+   team pill was still present and "Ravi Kulkarni" had nowhere to go — 1280 is
+   the commonest laptop width, so that was the default view for many users. */
+.tb-user-name { white-space:nowrap; }
+.tb-team { max-width:22ch; overflow:hidden; text-overflow:ellipsis; }
+/* Scoped to .topbar. Unscoped, it hid #vp-who on the vendor portal, where the
+   company name is the entire trust signal and nothing reflows into the gap. */
+@media (max-width:1340px) { .topbar .tb-team { max-width:14ch; } }
+@media (max-width:1180px) { .topbar .tb-team { display:none; } }
+@media (max-width:1000px) {
+  .topbar { padding:0 14px; gap:8px; }
+  .topbar-page { display:none; }
+  .tb-user-pos { display:none; }
+}
+@media (max-width:760px) {
+  .tb-vendor-link { display:none; }
+  .tb-user-name { display:none; }
+  .topbar-right { gap:8px; }
+}
+
+/* ══ What happens next ═════════════════════════════════════════════════════
+   The most important thing on a detail screen, so it sits above everything
+   else and carries the only filled button in view when it is yours to do. */
+.nxt {
+  display:flex; align-items:center; justify-content:space-between; gap:20px;
+  background:var(--card); border:1px solid var(--border);
+  border-left:3px solid var(--gray);
+  border-radius:var(--r-card); padding:16px 20px; margin-bottom:16px;
+}
+.nxt-mine { border-left-color:var(--orange); background:linear-gradient(90deg,#fafbfc,var(--card) 220px); }
+.nxt-done { border-left-color:var(--st-ok-fg); }
+.nxt-body { display:flex; flex-direction:column; gap:3px; min-width:0; }
+.nxt-cap {
+  font-size:var(--ds-micro); font-weight:700; letter-spacing:.9px;
+  text-transform:uppercase; color:var(--gray);
+}
+.nxt-mine .nxt-cap { color:var(--orange); }
+.nxt-done .nxt-cap { color:var(--st-ok-fg); }
+.nxt-verb { font-size:var(--ds-h2); font-weight:600; color:var(--navy); letter-spacing:-.1px; }
+.nxt-detail { font-size:var(--ds-body); color:var(--gray); line-height:1.5; max-width:74ch; }
+.nxt-who { font-size:var(--ds-caption); color:var(--gray); margin-top:4px; }
+.nxt-who b { color:var(--navy); font-weight:600; }
+.nxt-act { flex-shrink:0; }
+@media (max-width:760px) {
+  .nxt { flex-direction:column; align-items:flex-start; gap:14px; }
+  .nxt-act { align-self:stretch; }
+  .nxt-act button { width:100%; }
+}
+
+/* F32 · A cross-reference that navigates. It is a control, so it is square —
+   the shape system says pill means read-only. */
+.reflink {
+  font-family:'Inter',sans-serif; font-size:var(--ds-body); font-weight:600;
+  font-variant-numeric:tabular-nums; white-space:nowrap;
+  background:transparent; border:0; padding:2px 5px; margin:-2px -5px;
+  border-radius:var(--r-control); color:var(--navy); cursor:pointer;
+  text-decoration:underline; text-decoration-color:var(--border);
+  text-underline-offset:3px;
+  transition:background var(--t-micro) var(--e-out), text-decoration-color var(--t-micro) var(--e-out);
+}
+.reflink:hover { background:var(--btn-ghost-bg); text-decoration-color:var(--btn-accent); }
+/* --border on white is about 1.24:1 — invisible at 100% zoom, so a clickable
+   id and a dead one looked identical. The underline has to be legible or the
+   affordance does not exist. */
+.reflink { text-decoration-color:var(--gray); }
+.reflink:focus-visible { outline:2px solid var(--btn-accent); outline-offset:1px; }
+
+/* A1 · A blocked action states its reason in the layout, not in a tooltip a
+   keyboard or touch user can never reach. */
+/* The reason is positioned OUT of flow. As a column flex item it was ~185px
+   wide around a 76px button, which opened a 140px hole in the middle of every
+   header row and pushed the buttons after it out of alignment. */
+.act-blocked { display:inline-block; position:relative; }
+.act-blocked > button { display:inline-flex; }
+/* No opacity. Compositing .55 over --gray landed at about 2.1:1 — under-
+   contrast, in the same patch whose neighbour removed two invented greys for
+   exactly that reason. The tinted fill carries "unavailable" instead. */
+.act-blocked button[aria-disabled="true"] {
+  cursor:not-allowed; background:var(--ol);
+  color:var(--gray); border-color:var(--border);
+}
+.act-blocked button[aria-disabled="true"]:hover { background:var(--ol); color:var(--gray); border-color:var(--border); }
+.act-why {
+  position:absolute; top:calc(100% + 4px); right:0; width:max-content; max-width:30ch;
+  font-size:var(--ds-caption); color:var(--gray); line-height:1.4; text-align:right;
+  pointer-events:none;
+}
+/* Three blocked actions in one row printed the same sentence three times and
+   pushed the enabled buttons out of alignment. Only the first is shown; the
+   rest stay in the accessibility tree so every control is still explained. */
+.pg-actions { align-items:flex-start; flex-wrap:wrap; }
+.pg-actions .act-blocked ~ .act-blocked .act-why,
+.card-actions .act-blocked ~ .act-blocked .act-why {
+  position:absolute; width:1px; height:1px; margin:-1px;
+  overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap;
+}
+/* In a table cell the reason would double the row height. */
+.listing-table .act-why, .lines .act-why { display:none; }
+.listing-table .act-blocked, .lines .act-blocked { display:inline-block; }
+
+/* F22 · Tabs, not buttons. A view switch must not outrank the page's action. */
+.rpt-tabs { display:flex; gap:2px; margin-bottom:16px; background:var(--ol); padding:3px; border-radius:var(--r-control); width:fit-content; max-width:100%; overflow-x:auto; }
+.rpt-tab {
+  border:0; background:transparent; cursor:pointer; font-family:inherit;
+  font-size:var(--ds-body); font-weight:600; color:var(--gray); white-space:nowrap;
+  padding:7px 15px; border-radius:var(--r-control);
+  transition:background var(--t-fast) var(--e-out), color var(--t-fast) var(--e-out);
+}
+.rpt-tab:hover { color:var(--btn-accent); }
+.rpt-tab.active { background:var(--card); color:var(--navy); box-shadow:0 1px 2px rgba(15,23,42,.07); }
+.rpt-tab:focus-visible { outline:2px solid var(--btn-accent); outline-offset:-2px; }
+
+/* Notifications */
+.tb-icon { position:relative; }
+.tb-badge {
+  position:absolute; top:1px; right:1px; min-width:16px; height:16px; padding:0 3px;
+  border-radius:var(--r-status); background:var(--st-bad-fg); color:#fff;
+  font-size:var(--ds-micro); font-weight:700; line-height:16px; text-align:center;
+}
+/* One scroll container, not two nested inside a 380px panel. */
+.notif-dd { width:380px; padding:0; }
+.np-item { cursor:default; }
+.np-item[role="button"] { cursor:pointer; }
+.np-item[role="button"]:hover { background:var(--row-hover); }
+/* A rail, not a status fill. Filling the row with --st-info-bg put a status
+   colour on it for a reason that has nothing to do with status, and made
+   "highlighted row" mean two different things inside one app — the same
+   mistake main.css documents at length when it moved selection to grey.
+   The hover rule was also unreachable at 0-2-0 against 0-3-0, so hovering an
+   unread notification erased the only thing marking it unread. */
+.np-item.np-unread { background:var(--card); box-shadow:inset 3px 0 0 var(--row-sel-rail); }
+.np-item.np-unread .np-text { font-weight:700; }
+.np-item[role="button"].np-unread:hover { background:var(--row-hover); }
+.np-row2 { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+
+
+/* ==========================================================================
+   CYCLE-A REWORK  —  operations dashboard, palette, product chrome, print.
+   Every value resolves to a token; literals are layout numbers only.
+   ========================================================================== */
+
+/* -- Two-line listing cell: primary + quiet secondary --------------------- */
+.cell-2l { display:flex; flex-direction:column; gap:1px; min-width:0; }
+.cell-t { font-weight:600; color:var(--navy); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.cell-s { font-size:var(--ds-caption); color:var(--gray); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+/* -- UOM / currency AT the input, where the number is typed --------------- */
+.qty-wrap { display:inline-flex; align-items:center; gap:6px; }
+.qty-uom { font-size:var(--ds-caption); font-weight:600; color:var(--gray); }
+.qty-cur { font-size:var(--ds-body); font-weight:600; color:var(--gray); }
+
+/* -- Sidebar brand — the product names itself ---------------------------- */
+.sb-brand { display:flex; flex-direction:column; gap:1px; min-width:0; }
+.sb-brand-name { font-size:var(--ds-title); font-weight:700; color:var(--navy); letter-spacing:-.1px; white-space:nowrap; }
+.sb-brand-sub { font-size:var(--ds-micro); font-weight:600; letter-spacing:.5px; text-transform:uppercase; color:var(--gray); white-space:nowrap; }
+
+/* -- Topbar search field (opens the palette) ----------------------------- */
+.tb-search {
+  display:flex; align-items:center; gap:9px;
+  height:34px; padding:0 12px; min-width:230px;
+  border:1px solid var(--border); border-radius:var(--r-input);
+  background:var(--light); color:var(--gray); cursor:pointer;
+  font-family:inherit; font-size:var(--ds-body); text-align:left;
+  transition:border-color var(--t-fast) var(--e-out);
+}
+.tb-search:hover { border-color:#cbd2da; color:var(--navy); }
+.tb-search span { flex:1; }
+.tb-search kbd {
+  font-family:'Inter',sans-serif; font-size:var(--ds-micro); font-weight:600;
+  color:var(--gray); background:var(--card); border:1px solid var(--border);
+  border-radius:4px; padding:1px 6px;
+}
+@media (max-width:900px) { .tb-search { min-width:0; } .tb-search span, .tb-search kbd { display:none; } }
+
+/* -- Command palette ----------------------------------------------------- */
+.pal-back {
+  position:fixed; inset:0; background:rgba(15,23,42,.42); z-index:600;
+  display:flex; align-items:flex-start; justify-content:center; padding:12vh 24px 24px;
+  animation:fadeIn var(--t-base) var(--e-out);
+}
+.pal {
+  width:100%; max-width:640px; background:var(--card); border-radius:var(--r-card);
+  box-shadow:0 24px 70px rgba(15,23,42,.30); overflow:hidden;
+  animation:modalIn var(--t-base) var(--e-out);
+}
+.pal-input {
+  width:100%; border:0; outline:none; padding:16px 20px;
+  font-family:inherit; font-size:var(--ds-h2); color:var(--navy);
+  border-bottom:1px solid var(--border); background:var(--card);
+}
+.pal-input::placeholder { color:#b6bcc5; font-size:var(--ds-body); }
+.pal-results { max-height:46vh; overflow-y:auto; padding:6px; }
+.pal-row {
+  display:flex; align-items:baseline; gap:12px; width:100%;
+  padding:9px 14px; border:0; background:transparent; border-radius:var(--r-control);
+  font-family:inherit; font-size:var(--ds-body); color:var(--navy);
+  cursor:pointer; text-align:left;
+}
+.pal-row.sel { background:var(--row-sel); box-shadow:inset 3px 0 0 var(--row-sel-rail); }
+.pal-kind {
+  flex-shrink:0; width:86px; font-size:var(--ds-micro); font-weight:600;
+  letter-spacing:.5px; text-transform:uppercase; color:var(--gray);
+}
+.pal-main { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.pal-main b { font-weight:600; }
+.pal-extra { flex-shrink:0; font-size:var(--ds-caption); color:var(--gray); }
+.pal-none { padding:22px 20px; font-size:var(--ds-body); color:var(--gray); }
+.pal-foot {
+  display:flex; gap:18px; padding:9px 20px; border-top:1px solid var(--border);
+  font-size:var(--ds-micro); color:var(--gray); background:var(--light);
+}
+
+/* -- Pipeline strip ------------------------------------------------------ */
+.pipe { display:flex; gap:3px; }
+.pipe-seg {
+  min-width:56px; border-radius:6px; padding:9px 10px 7px;
+  display:flex; flex-direction:column; gap:1px;
+  transition:transform var(--t-fast) var(--e-out), box-shadow var(--t-fast) var(--e-out);
+}
+.pipe-seg[role="button"] { cursor:pointer; }
+.pipe-seg[role="button"]:hover { transform:translateY(-1px); box-shadow:0 2px 8px rgba(15,23,42,.10); }
+.pipe-seg:focus-visible { outline:2px solid var(--btn-accent); outline-offset:2px; }
+.pipe-seg b { font-size:var(--ds-h2); font-weight:700; line-height:1.1; }
+.pipe-seg span { font-size:var(--ds-micro); font-weight:600; letter-spacing:.3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+/* The p1..p8 ladder: the shade IS the data — how far along the journey. */
+.pipe-p1 { background:var(--st-p1-bg); color:var(--st-p1-fg); }
+.pipe-p2 { background:var(--st-p2-bg); color:var(--st-p2-fg); }
+.pipe-p3 { background:var(--st-p3-bg); color:var(--st-p3-fg); }
+.pipe-p4 { background:var(--st-p4-bg); color:var(--st-p4-fg); }
+.pipe-p5 { background:var(--st-p5-bg); color:var(--st-p5-fg); }
+.pipe-p6 { background:var(--st-p6-bg); color:var(--st-p6-fg); }
+.pipe-p7 { background:var(--st-p7-bg); color:var(--st-p7-fg); }
+.pipe-p8 { background:var(--st-p8-bg); color:var(--st-p8-fg); }
+
+/* -- Workload / exposure bars -------------------------------------------- */
+.dash-2col { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:16px; }
+.dash-2col > .card { margin-bottom:16px; }
+.wl { display:flex; flex-direction:column; gap:9px; }
+.wl-row { display:grid; grid-template-columns:170px 1fr 44px; align-items:center; gap:12px; }
+.wl-name { font-size:var(--ds-body); font-weight:500; color:var(--navy); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.wl-bar { height:10px; border-radius:var(--r-status); background:var(--ol); overflow:hidden; }
+.wl-bar i { display:block; height:100%; border-radius:var(--r-status); background:var(--navy); }
+.wl-bar-v i { background:var(--st-p3-fg); }
+.wl-n { font-size:var(--ds-body); font-weight:700; color:var(--navy); text-align:right; font-variant-numeric:tabular-nums; }
+.wl-you .wl-bar i { background:var(--orange); }
+
+/* -- Return-window aging bar --------------------------------------------- */
+.agebar-cell { min-width:150px; }
+.agebar { height:8px; border-radius:var(--r-status); background:var(--ol); overflow:hidden; }
+.agebar i { display:block; height:100%; border-radius:var(--r-status); }
+.agebar-ok i   { background:var(--st-ok-fg); }
+.agebar-warn i { background:var(--st-wait-fg); }
+.agebar-bad i  { background:var(--st-bad-fg); }
+.agebar-cap { display:block; margin-top:3px; font-size:var(--ds-micro); color:var(--gray); white-space:nowrap; }
+
+/* -- Zero tiles read as "clear", not as missing data --------------------- */
+.tile-zero { background:var(--light); }
+.tile-zero .tile-val { color:var(--gray); }
+
+/* -- Age / dwell --------------------------------------------------------- */
+.age { font-variant-numeric:tabular-nums; white-space:nowrap; }
+.age-warn { color:var(--st-wait-fg); font-weight:600; }
+.nxt-age { font-weight:600; color:var(--st-wait-fg); text-transform:none; letter-spacing:0; }
+.nxt-demo { display:inline-flex; flex-direction:column; align-items:flex-end; gap:3px; }
+.nxt-demo-cap { font-size:var(--ds-micro); color:#b6bcc5; letter-spacing:.5px; text-transform:uppercase; }
+
+/* -- Designed empty states ----------------------------------------------- */
+.lst-empty { display:flex; flex-direction:column; align-items:center; gap:4px; }
+.lst-empty b { font-size:var(--ds-title); color:var(--navy); font-weight:600; }
+.lst-empty span { font-size:var(--ds-body); color:var(--gray); max-width:44ch; }
+.lst-empty-ico { width:38px; height:38px; border-radius:50%; background:var(--ol);
+  display:flex; align-items:center; justify-content:center; color:var(--gray); margin-bottom:6px; }
+.lst-empty-ico svg { width:18px; height:18px; }
+
+/* -- Page entrance motion ------------------------------------------------
+   motion.css keys the entrance to #adt-content, which this shell does not
+   have — so every non-listing page arrived with no motion at all. Same
+   animation, correct root. Repaints patch the DOM in place, so this replays
+   only on real navigation. */
+.page-content > * { animation: fadeUp .28s var(--e-out) both; }
+.page-content > *:nth-child(2) { animation-delay:.03s; }
+.page-content > *:nth-child(3) { animation-delay:.06s; }
+.page-content > *:nth-child(4) { animation-delay:.09s; }
+@media (prefers-reduced-motion:reduce) { .page-content > * { animation:none; } }
+
+/* -- Sticky activity rail ------------------------------------------------ */
+.split > div:last-child { position:sticky; top:0; align-self:start; }
+
+/* -- Vendor portal reading width, restored ------------------------------- */
+.vp-main { max-width:1080px; }
+.vp-hero { display:flex; align-items:center; justify-content:space-between; gap:24px;
+  background:var(--card); border:1px solid var(--border); border-radius:var(--r-card);
+  padding:20px 24px; margin-bottom:16px; }
+.vp-hero-main { display:flex; flex-direction:column; gap:3px; min-width:0; }
+.vp-hero-cap { font-size:var(--ds-micro); font-weight:700; letter-spacing:.8px; text-transform:uppercase; color:var(--gray); }
+.vp-hero-line { font-size:var(--ds-h2); font-weight:600; color:var(--navy); }
+.vp-hero-sub { font-size:var(--ds-body); color:var(--gray); }
+.vp-hero-bar { width:220px; flex-shrink:0; }
+.vp-acct { display:flex; align-items:center; gap:9px; }
+.vp-acct-avatar { width:30px; height:30px; border-radius:50%; background:var(--ol); color:var(--orange);
+  display:flex; align-items:center; justify-content:center; font-size:var(--ds-micro); font-weight:700; }
+.vp-acct-name { font-size:var(--ds-body); font-weight:600; color:var(--navy); white-space:nowrap; }
+
+/* -- Print: the two movement documents ----------------------------------- */
+@media print {
+  .sidebar, .topbar, .vp-bar, .pg-actions, .nxt, .stagebar, .notice,
+  .act-panel, #toast-host, #modal-host, #palette-host, .filter-row,
+  .listing-stats, .tiles, .card-actions { display:none !important; }
+  .content-area, .page-content { display:block; overflow:visible; padding:0; }
+  .split { display:block; }
+  .doc { border:0; max-width:none; padding:0; }
+  body { background:#fff; overflow:visible; height:auto; }
+}

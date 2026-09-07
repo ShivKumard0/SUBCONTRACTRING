@@ -1,0 +1,1961 @@
+﻿
+:root{--orange:#1a1a1a;--navy:#0f172a;--gray:#6a7282;--light:#f8f9fb;--card:#fff;--border:#e5e7eb;--ol:#f1f5f9;--green:var(--st-ok-fg);--red:#ef4444}
+/* Dashboard widget type scale — single source of truth for every card/widget.
+   Use these tokens instead of hard-coded px so all widgets stay optically aligned.
+   10 / 11 / 12 / 13 / 15 / 18 / 26 — no in-between sizes. */
+:root{
+  --ds-metric:22.5px;    /* primary widget value: numbers + short status words */
+  --ds-metric-text:18px; /* widget value that is a long text string (entity/company name) */
+  --ds-h1:18px;          /* dashboard page title */
+  --ds-h2:15px;          /* hero / feature panel title */
+  --ds-title:13px;       /* section + panel titles, action card names */
+  --ds-body:12px;        /* table + list body text, row labels and values */
+  --ds-label:11px;       /* uppercase eyebrow label above a metric */
+  --ds-caption:11px;     /* supporting caption under a metric, links, meta */
+  --ds-micro:10px;       /* badges, pills, table headers, buttons in tables */
+}
+/* Shape system — radius says what a thing IS, so shape alone is readable at a glance.
+   PILL  = read-only state. Status badges, tags, chips, counts. Never clickable.
+   SQUARE= actionable. Buttons, tabs, selects, inputs, toggles. Always clickable.
+   Do not mix: a pill-shaped button or a square status badge breaks the signal. */
+:root{
+  --r-status:999px;   /* status badges / tags / chips / count pills */
+  --r-control:8px;    /* buttons, tabs, dropdowns, filters — square card, rounded edges */
+  --r-input:999px;    /* single-line typeable fields — fully rounded card */
+  --r-card:14px;      /* cards and panels */
+}
+/* Shape tells you how a control behaves:
+     ROUNDED (--r-input)   you type into it        text / search / number / date
+     SQUARE  (--r-control) you pick or press it    dropdowns, filters, buttons
+   Multi-line textareas stay square: a pill radius would eat into the text box. */
+/* Status colour coding — one meaning per hue, used by EVERY status indicator.
+   Never hard-code a status colour; pick the state and use its three tokens.
+     ok    green  settled + positive : Active, Approved, Paid, Present, Submitted, Completed
+     wait  amber  still in flight    : Pending, In Progress, Waiting for..., Onboarding
+     bad   red    settled + negative : Blocked, Rejected, Inactive, Absent, Unapproved, Unpaid
+     info  blue   purely informational: Open, Available, Created
+     idle  grey   no longer in play  : Closed, Expired, Draft, Weekend, Unresolved
+   Amber means "waiting", never "bad" — that distinction is why Unapproved/Unpaid are red. */
+:root{
+  --st-ok-bg:#dcfce7;   --st-ok-fg:#16a34a;   --st-ok-bd:#86efac;
+/* ONE GREEN.  --st-ok-fg above is it, and --green in the palette at the top of
+   this file is now an alias of it rather than a second opinion.
+
+   There were five greens meaning the same thing. --green was #22c55e and
+   --st-ok-fg #16a34a, so two captions that both mean "this went well" - the
+   dashboard's "75% of team" and the timesheet's "+16 days vs last month" -
+   were rendered in visibly different greens on screens the user flips between.
+   Around them sat #15803d on two badges, #4ade80 on the timesheet present
+   rail, and #f0fdf4 as a fifth tint under three more. None of the five was
+   chosen against the others; each was picked once, locally, and never
+   compared.
+
+   Every one of them now resolves to the --st-ok-* triple. Contract pipeline
+   stage 6 does too: its bg and bd were already identical to ok's and only its
+   fg differed, by a hair - a near-match reads as a mistake where a clear
+   difference reads as meaning.
+
+   WHAT IS DELIBERATELY NOT ONE GREEN: --st-p4 (lime) and --st-p8 (deep green)
+   in the ladder below. There the SHADE IS THE DATA - it says how far along a
+   contract is - and the set is documented as clearing dE 12 pairwise. Fold
+   those into one green and the ladder stops carrying information. Teal
+   (#0d9488, the AI-recommend badge) is a different hue and a different
+   meaning, and is left alone. */
+  --st-wait-bg:#fef3c7; --st-wait-fg:#92400e; --st-wait-bd:#fde68a;
+  --st-bad-bg:#fee2e2;  --st-bad-fg:#dc2626;  --st-bad-bd:#fca5a5;
+  --st-info-bg:#eff6ff; --st-info-fg:#2563eb; --st-info-bd:#93c5fd;
+  --st-idle-bg:#f1f5f9; --st-idle-fg:#64748b; --st-idle-bd:#cbd5e1;
+  /* Contract pipeline. The 5 tones above answer "is this good or bad"; a deal
+     also has to answer "how far along is it". Two families carry that:
+       SENT / waiting  -> blues,  deepening   (cyan -> blue -> violet)
+       APPROVED        -> greens, deepening   (teal -> olive -> green)
+     then amber while onboarding, deep green when ready. Every pair in this
+     set clears ΔE 12 against each other AND against red Inactive, which shows
+     in the same table; all eight pass AA contrast. */
+  --st-p1-bg:#cffafe; --st-p1-fg:#0e7490; --st-p1-bd:#67e8f9;  /* 1 Submitted          sent */
+  --st-p2-bg:#ccfbf1; --st-p2-fg:#0f766e; --st-p2-bd:#5eead4;  /* 2 Quotation Approved approved */
+  --st-p3-bg:#dbeafe; --st-p3-fg:#1d4ed8; --st-p3-bd:#93c5fd;  /* 3 Proposal Sent      sent */
+  --st-p4-bg:#d9f99d; --st-p4-fg:#3f6212; --st-p4-bd:#bef264;  /* 4 Proposal Approved  approved */
+  --st-p5-bg:#ede9fe; --st-p5-fg:#6d28d9; --st-p5-bd:#c4b5fd;  /* 5 Contract Sent      sent */
+  --st-p6-bg:var(--st-ok-bg); --st-p6-fg:var(--st-ok-fg); --st-p6-bd:var(--st-ok-bd);  /* 6 Contract Approved  approved */
+  --st-p7-bg:#fef3c7; --st-p7-fg:#92400e; --st-p7-bd:#fde68a;  /* 7 Onboarding         in progress */
+  --st-p8-bg:#bbf7d0; --st-p8-fg:#14532d; --st-p8-bd:#4ade80;  /* 8 Ready for Payroll  done */
+}
+/* Line-item selection — ONE feedback for every clickable row/cell in the app:
+   table rows (listings, leaves, policies, payroll, tickets…), timesheet day
+   cells, picker list items. Grey on click, same fade, same orange rail.
+   Never hard-code a selected background; use these three.
+
+   GREY, NOT BLUE. These were --st-info-bg blue, which put a status colour on
+   a row for a reason that has nothing to do with its status - an open record
+   read as an informational one, and next to a real blue badge the two argued.
+   Grey says "this is the one you are looking at" and says nothing else, which
+   is all selection ever means. The orange rail is what makes it unmistakable;
+   the fill only has to be a step darker than --row-hover. */
+:root{
+  --row-hover:#fafbfc;      /* pointer is over it, nothing committed yet */
+  --row-sel:#f1f3f5;        /* clicked / open — the same neutral as the icon chips */
+  --row-sel-hover:#e7eaee;  /* clicked AND hovered */
+  --row-sel-rail:var(--orange);  /* 3px inset accent rail on the leading edge */
+  --row-fade:background-color .16s ease;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif}
+body{font-family:'Inter',sans-serif;background:var(--light);color:var(--navy);overflow:hidden;height:100vh;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;font-feature-settings:'cv02','cv03','cv04','cv11'}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes blink{0%,100%{opacity:.3}50%{opacity:1}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.view{display:none;flex-direction:column;height:100vh;width:100%;animation:fadeIn .3s ease}
+.view.active{display:flex}
+/* TOPBAR */
+.topbar{height:56px;background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px;flex-shrink:0;z-index:20}
+.topbar-left{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
+.topbar-center{display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.topbar-right{display:flex;align-items:center;gap:14px;flex:1;min-width:0;justify-content:flex-end}
+.adt-logo{display:flex;align-items:center;gap:6px}
+.adt-logo img{height:26px;width:auto;display:block}
+.adt-logo svg{width:28px;height:28px}
+.adt-logo-text{font-weight:800;font-size:18px;color:var(--navy);letter-spacing:-.5px}
+.topbar-page{font-size:14px;font-weight:600;color:var(--navy);margin-left:4px;white-space:nowrap}
+.sidebar-toggle{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:0;background:transparent;color:var(--navy);border-radius:8px;cursor:pointer;transition:.2s;flex-shrink:0}
+.sidebar-toggle:hover{background:var(--btn-ghost-bg);color:var(--btn-accent)}
+.sidebar-toggle svg{width:18px;height:18px}
+.page-add-btn{width:22px;height:22px;border:0;border-radius:50%;background:var(--orange);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.2s;flex-shrink:0}
+/* These two sit outside the button system and are already --orange (#1a1a1a)
+   at rest, so --btn-accent would be no change at all - they go to pure black.
+   Same direction as every other hover: darker, never a different hue. */
+.page-add-btn:hover{background:var(--btn-solid-hover);transform:scale(1.08)}
+.page-add-btn svg{width:12px;height:12px}
+.tb-icon{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:10px;border:none;cursor:pointer;background:0;color:var(--gray);transition:.2s}
+.tb-icon:hover{background:var(--btn-ghost-bg);color:var(--btn-accent)}
+.agent-btn{display:flex;align-items:center;gap:8px;padding:8px 18px;background:linear-gradient(135deg,#111827,#2d2d38);color:#fff;border:none;border-radius:var(--r-control);cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;letter-spacing:.1px;transition:transform .18s ease,box-shadow .18s ease,background .18s ease}
+.agent-btn:hover{background:linear-gradient(135deg,#000,#1a1a20)}
+.agent-btn:active{transform:translateY(0) scale(.97)}
+.agent-btn .spark{display:flex;align-items:center;justify-content:center;color:#fbbf24;filter:drop-shadow(0 0 4px rgba(251,191,36,.55));animation:agent-spark-pulse 2.4s ease-in-out infinite}
+@keyframes agent-spark-pulse{0%,100%{transform:scale(1) rotate(0deg);opacity:1}50%{transform:scale(1.18) rotate(10deg);opacity:.82}}
+.company-sel,.user-sel{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;cursor:pointer;color:var(--navy);padding:5px 8px;border-radius:8px;transition:background .15s}
+.company-sel:hover,.user-sel:hover{background:var(--light)}
+.company-sel svg,.user-sel svg{width:16px;height:16px;color:var(--gray)}
+.hdr-dd-chev{transition:transform .18s}
+.user-avatar-sm{width:28px;height:28px;border-radius:50%;background:var(--ol);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--orange)}
+/* Header dropdowns */
+.hdr-dd-wrap{position:relative}
+.hdr-dd-panel{position:absolute;top:calc(100% + 10px);left:0;min-width:240px;background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.12);z-index:999;padding:8px;display:none;animation:hdrFadeIn .15s ease}
+.hdr-dd-panel-right{left:auto;right:0}
+.hdr-dd-panel.open{display:block}
+@keyframes hdrFadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.hdr-dd-header{display:flex;align-items:center;gap:10px;padding:10px 10px 12px}
+.hdr-dd-entity-logo{width:36px;height:36px;border-radius:9px;background:var(--ol);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--orange);flex-shrink:0}
+.hdr-dd-title{font-size:13px;font-weight:700;color:var(--navy);line-height:1.3}
+.hdr-dd-subtitle{font-size:11px;color:var(--gray);margin-top:1px}
+.hdr-dd-divider{height:1px;background:var(--border);margin:4px 0}
+.hdr-dd-info-row{display:flex;align-items:center;justify-content:space-between;padding:5px 10px;font-size:12px}
+.hdr-dd-info-label{color:var(--gray);font-weight:500}
+.hdr-dd-info-val{color:var(--navy);font-weight:600}
+.hdr-dd-badge{background:var(--st-ok-bg);color:var(--st-ok-fg);border-radius:var(--r-status);padding:2px 8px;font-size:11px}
+.hdr-dd-item{display:flex;align-items:center;gap:9px;width:100%;padding:9px 10px;border:none;background:none;border-radius:8px;font-size:13px;font-weight:500;color:var(--navy);cursor:pointer;text-align:left;transition:background .12s}
+.hdr-dd-item:hover{background:var(--light)}
+.hdr-dd-item svg{color:var(--gray);flex-shrink:0}
+.hdr-dd-item-danger{color:#dc2626}
+.hdr-dd-item-danger svg{color:#dc2626}
+.hdr-dd-item-danger:hover{background:#fef2f2}
+/* SIDEBAR */
+.sidebar{width:224px;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;overflow-x:hidden;max-height:calc(100vh - 56px);padding:8px 0;transition:width .22s cubic-bezier(.4,0,.2,1);scrollbar-width:thin;scrollbar-color:#e5e7eb transparent}
+.sidebar::-webkit-scrollbar{width:3px}
+.sidebar::-webkit-scrollbar-track{background:transparent}
+.sidebar::-webkit-scrollbar-thumb{background:#e5e7eb;border-radius:99px}
+.sidebar::-webkit-scrollbar-thumb:hover{background:#d1d5db}
+.sidebar::-webkit-scrollbar-button{display:none;height:0;width:0}
+.sidebar.collapsed{width:62px;padding:8px 0}
+.sb-top{padding:4px 10px 8px;display:flex;align-items:center;justify-content:space-between;min-height:44px;flex-shrink:0}.sb-menu-label{font-size:11px;font-weight:600;color:#9ca3af;letter-spacing:.5px;text-transform:uppercase}
+.sb-top .sidebar-toggle{width:32px;height:32px}
+/* -- Nav items -- */
+.sb-item{display:flex;align-items:center;gap:9px;padding:7px 10px;margin:1px 8px;cursor:pointer;font-size:13px;font-weight:500;color:#4b5563;transition:background .14s ease,color .14s ease,box-shadow .14s ease;background:transparent;border:none;border-radius:0;position:relative;text-align:left;flex-shrink:0;width:calc(100% - 16px)}
+.sb-item:hover{background:#f1f5f9;color:#111827}
+.sb-item:hover .sb-ico-wrap{background:#e2e8f0;color:#374151;transform:scale(1.08)}
+/* Active marker for EVERY nav item, top level and children alike: a straight
+   full-height bar. An inset box-shadow is clipped to the border box, so on a
+   rounded item it curved around the corners into a bracket — hence the square
+   corners above and the pseudo-element here. The AI launcher is excluded: its
+   ::before is the animated gradient border, not a marker. */
+/* Square on the left, rounded on the right. The two ends are doing different
+   jobs: the left is where the 3px marker sits and it has to read as one solid
+   edge with it, so a radius there would leave a sliver of background curving
+   past the bar. The right end is just where the highlight stops, and a
+   rounded end makes it read as a tab attached to the rail rather than a strip
+   cut out of the sidebar. Marker stays square because it is positioned inside
+   the left edge, which keeps its own 0 radius. */
+.sb-item.active{color:var(--orange);font-weight:600;background:#f1f5f9;box-shadow:none;border-radius:0 var(--r-control) var(--r-control) 0}
+.sb-item.active:not(.sb-item-ai)::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:0;background:var(--orange)}
+.sb-item.active .sb-ico-wrap{background:#e2e8f0;color:var(--orange)}
+/* -- Icon wrap -- */
+.sb-ico-wrap{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:transparent;color:#64748b;transition:background .14s ease,color .14s ease,transform .14s ease}
+.sb-ico-wrap svg{width:15px;height:15px}
+/* -- Dropdown parents -- */
+.sb-parent{display:flex;align-items:center;gap:9px;padding:7px 10px;margin:1px 8px;cursor:pointer;font-size:13px;font-weight:500;color:#4b5563;transition:background .14s ease,color .14s ease;background:transparent;border:none;border-radius:9px;text-align:left;flex-shrink:0;width:calc(100% - 16px)}
+.sb-parent:hover{background:#f1f5f9;color:#111827}
+.sb-parent:hover .sb-ico-wrap{background:#e2e8f0;color:#374151;transform:scale(1.08)}
+.sb-parent>span{flex:1;text-align:left}
+.sb-parent.open{color:#111827;font-weight:600;background:#f4f7fb}
+.sb-parent.open .sb-ico-wrap{background:#e2e8f0;color:var(--orange)}
+.sb-parent.has-active{color:#111827;font-weight:600}
+.sb-parent.has-active .sb-ico-wrap{background:#e2e8f0;color:var(--orange)}
+.sb-parent.has-active:not(.open){background:transparent}
+.sb-parent .sb-chev{width:13px;height:13px;transition:transform .28s cubic-bezier(.4,0,.2,1);color:#64748b;flex-shrink:0;margin-left:auto}
+.sb-parent.open .sb-chev{transform:rotate(180deg);color:var(--orange)}
+/* -- Section labels -- */
+.sb-section{font-size:10px;font-weight:700;color:#c4c9d4;text-transform:uppercase;letter-spacing:.9px;padding:16px 18px 5px;flex-shrink:0}
+/* -- Children -- */
+.sb-children{display:flex;flex-direction:column;overflow:hidden;background:transparent;margin:2px 8px 4px 20px;padding:0;border-left:2px solid #edf0f4;flex-shrink:0;transition:max-height .32s cubic-bezier(.4,0,.2,1)}
+.sb-children .sb-item{padding:6px 8px;margin:1px 4px;font-size:12.5px;color:#64748b;border-radius:0;gap:8px;flex-shrink:0;width:calc(100% - 8px);box-shadow:none}
+.sb-children .sb-item .sb-ico-wrap{width:22px;height:22px;border-radius:5px;background:transparent;color:#64748b}
+.sb-children .sb-item .sb-ico-wrap svg{width:12px;height:12px}
+.sb-children .sb-item:hover{background:#f1f5f9;color:#111827}
+.sb-children .sb-item:hover .sb-ico-wrap{background:#e2e8f0;color:#475569;transform:scale(1.08)}
+/* marker comes from .sb-item.active::before above — same bar as the top level */
+/* Restated here only because `.sb-children .sb-item` resets border-radius to 0
+   further down the file at equal specificity, which would otherwise square a
+   child item back off. Same shape as the top level. */
+.sb-children .sb-item.active{color:var(--orange);font-weight:600;background:#f1f5f9;box-shadow:none;border-radius:0 var(--r-control) var(--r-control) 0}
+.sb-children .sb-item.active .sb-ico-wrap{background:#e2e8f0;color:var(--orange)}
+.sb-spacer{flex:1}
+.sb-agent-launcher{margin:8px;padding:10px;border-radius:12px;background:var(--ol);border:1px solid #d1d5db;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--orange);transition:.2s}
+.sb-agent-launcher:hover{background:var(--btn-tint-bg);color:var(--btn-accent);transform:scale(1.04)}
+.sb-agent-launcher svg{width:20px;height:20px}
+/* == COLLAPSED sidebar ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â icon-only == */
+.sidebar.collapsed .sb-item{padding:6px;margin:2px 6px;justify-content:center;width:auto;border-radius:10px;box-shadow:none}
+.sidebar.collapsed .sb-item span{display:none}
+.sidebar.collapsed .sb-item .sb-ico-wrap{width:34px;height:34px;border-radius:9px;background:transparent}
+.sidebar.collapsed .sb-item:hover{background:transparent}
+.sidebar.collapsed .sb-item:hover .sb-ico-wrap{background:#e8edf4;color:#374151;transform:scale(1.1)}
+/* icon-only rail marks the active item with the ring on .sb-ico-wrap below,
+   so the bar stays off here (the AI launcher keeps its gradient ::before) */
+.sidebar.collapsed .sb-item.active{background:transparent;box-shadow:none}
+.sidebar.collapsed .sb-item.active:not(.sb-item-ai)::before{display:none}
+.sidebar.collapsed .sb-item.active .sb-ico-wrap{background:#f1f5f9;color:var(--orange);box-shadow:0 0 0 1.5px rgba(26,26,26,.25)}
+.sidebar.collapsed .sb-section{display:none}
+.sidebar.collapsed .sb-parent{display:flex;padding:6px;margin:2px 6px;justify-content:center;border-radius:10px;width:auto;background:transparent}
+.sidebar.collapsed .sb-parent span,.sidebar.collapsed .sb-parent .sb-chev{display:none}
+.sidebar.collapsed .sb-parent .sb-ico-wrap{width:34px;height:34px;border-radius:9px;background:transparent}
+.sidebar.collapsed .sb-parent:hover{background:transparent}
+.sidebar.collapsed .sb-parent:hover .sb-ico-wrap{background:#e8edf4;color:#374151;transform:scale(1.1)}
+.sidebar.collapsed .sb-parent.has-active .sb-ico-wrap{background:#f1f5f9;color:var(--orange);box-shadow:0 0 0 1.5px rgba(26,26,26,.25)}
+.sidebar.collapsed .sb-parent.open .sb-ico-wrap{background:#f1f5f9;color:var(--orange)}
+.sidebar.collapsed .sb-top{justify-content:center;padding:4px}
+.sidebar.collapsed .sb-children{display:none!important}
+.sb-parent .sb-ico{width:16px;height:16px;flex-shrink:0}
+/* -- AI Executive: animated gradient border -- */
+@property --ai-border-angle{syntax:'<angle>';inherits:false;initial-value:0deg}
+.sb-item-ai{position:relative}
+.sb-item-ai::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  padding:1.4px;
+  background:conic-gradient(from var(--ai-border-angle),#3b82f6 0deg,var(--st-ok-fg) 120deg,var(--red) 240deg,#3b82f6 360deg);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;
+  mask-composite:exclude;
+  opacity:.75;
+  animation:ai-border-spin 7s linear infinite;
+  pointer-events:none;
+}
+.sidebar.collapsed .sb-item-ai::before{animation-duration:9s}
+.sb-item-ai.active::before{
+  padding:1.8px;
+  opacity:1;
+  animation-duration:2.6s;
+  background:conic-gradient(from var(--ai-border-angle),transparent 0deg,transparent 140deg,#fde3b8 200deg,#fbbf6b 250deg,var(--orange) 300deg,#fbbf6b 340deg,transparent 360deg);
+}
+.sb-item-ai.active{animation:ai-active-glow 2.4s ease-in-out infinite}
+.sidebar.collapsed .sb-item-ai.active .sb-ico-wrap{animation:ai-active-glow-ico 2.4s ease-in-out infinite}
+@keyframes ai-border-spin{to{--ai-border-angle:360deg}}
+@keyframes ai-active-glow{
+  0%,100%{box-shadow:inset 3px 0 0 var(--orange),0 2px 10px rgba(26,26,26,.16)}
+  50%{box-shadow:inset 3px 0 0 var(--orange),0 4px 18px rgba(26,26,26,.32)}
+}
+@keyframes ai-active-glow-ico{
+  0%,100%{box-shadow:0 0 0 1.5px rgba(26,26,26,.25)}
+  50%{box-shadow:0 0 0 3px rgba(26,26,26,.4)}
+}
+/* NOTIFICATION POPOVER */
+.notif-pop{position:absolute;top:52px;right:16px;width:380px;background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 12px 40px rgba(15,23,42,.12);z-index:100;animation:fadeUp .2s ease;overflow:hidden}
+.notif-pop.hidden{display:none}
+.np-head{padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between}
+.np-title{font-size:15px;font-weight:700;color:var(--navy)}
+.np-actions{display:flex;align-items:center;gap:6px}
+.np-iconbtn{width:26px;height:26px;display:flex;align-items:center;justify-content:center;border:0;background:0;color:var(--gray);border-radius:6px;cursor:pointer;transition:.15s}
+.np-iconbtn:hover{background:var(--btn-ghost-bg);color:var(--btn-accent)}
+.np-controls{display:flex;align-items:center;justify-content:space-between;padding:0 16px 12px;border-bottom:1px solid var(--border)}
+.np-mark{font-size:12px;color:var(--gray);font-weight:500;cursor:pointer;background:0;border:0;font-family:inherit;padding:0}
+.np-mark:hover{color:var(--orange)}
+.np-toggle-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--gray)}
+.np-switch{width:32px;height:18px;background:#e5e7eb;border-radius:9px;position:relative;cursor:pointer;transition:.2s;border:0;padding:0}
+.np-switch.on{background:var(--green)}
+.np-switch::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;background:#fff;border-radius:50%;transition:.2s}
+.np-switch.on::after{left:16px}
+.np-list{max-height:380px;overflow-y:auto}
+.np-item{display:flex;gap:12px;padding:14px 16px;border-bottom:1px solid #f1f3f5;align-items:flex-start}
+.np-item:last-child{border-bottom:0}
+.np-item:hover{background:#fafbfc}
+.np-avatar{width:32px;height:32px;border-radius:50%;background:#dbeafe;color:#3b82f6;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.np-body{flex:1;min-width:0}
+.np-row1{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:3px}
+.np-text{font-size:13px;font-weight:600;color:var(--navy)}
+.np-time{font-size:11px;color:var(--gray);white-space:nowrap;flex-shrink:0}
+.np-row2{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--gray)}
+.np-pending{padding:2px 8px;border-radius:4px;background:#fef3c7;color:#92400e;font-size:10px;font-weight:600}
+/* CONTENT */
+.content-area{flex:1;display:flex;overflow:hidden;min-width:0}
+.page-content{flex:1;overflow-y:auto;overflow-x:hidden;padding:28px 32px;min-width:0;max-width:100%;scrollbar-width:thin;scrollbar-color:rgba(0,0,0,.08) transparent}
+.page-content::-webkit-scrollbar{width:3px}
+.page-content::-webkit-scrollbar-track{background:transparent}
+.page-content::-webkit-scrollbar-thumb{background:rgba(0,0,0,.1);border-radius:99px}
+.page-content::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,.18)}
+.page-content::-webkit-scrollbar-button{display:none;height:0;width:0}
+/* DASHBOARD */
+.welcome-banner{display:flex;gap:16px;margin-bottom:24px}
+.wb-left{flex:1;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px 28px}
+.wb-title{font-size:22px;font-weight:700;margin-bottom:6px}
+.wb-desc{font-size:13px;color:var(--gray);line-height:1.5;margin-bottom:16px;max-width:380px}
+.wb-btns{display:flex;gap:10px}
+.wb-btn{padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;border:none;transition:.2s}
+.wb-btn.primary{background:var(--navy);color:#fff}
+.wb-btn.secondary{background:0;color:var(--navy);border:none}
+.attendance-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;min-width:260px}
+.att-title{font-size:var(--ds-title);font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+/* Tighter inside the attendance card than the generic .att-row, which the card
+   no longer shares with anything: three rows plus a two-line readout is a lot
+   for one KPI-row card, and it was standing 28px taller than its neighbours. */
+.att .att-title{margin-bottom:9px}
+.att .att-row{margin-bottom:3px}
+.att-title a{font-size:var(--ds-caption);color:var(--orange);text-decoration:none;font-weight:600}
+.att-row{display:flex;align-items:center;gap:8px;font-size:var(--ds-body);color:var(--gray);margin-bottom:6px;min-width:0}
+.att-val{margin-left:auto;font-weight:600;color:var(--navy);font-size:var(--ds-body);min-width:0;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.att-meta{font-size:var(--ds-caption);color:var(--gray)}
+.clock-btn{margin-top:12px;padding:8px 20px;background:var(--green);color:#fff;border:none;border-radius:var(--r-control);font-size:var(--ds-body);font-weight:600;font-family:inherit;cursor:pointer;float:right}
+
+/* Visible to screen readers only. Used by the attendance card's live region:
+   the animation is aria-hidden, so the outcome has to be announced in text. */
+.sr-only{
+  position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;
+  clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
+
+/* ══ ATTENDANCE CLOCK ══════════════════════════════════════════════════════
+   Punching in is the one thing on this dashboard the employee DOES rather than
+   reads, so it is the one thing that gets a real piece of motion. The rules it
+   follows are the same ones in motion.css — arrive on --e-out, respond inside
+   --t-fast, and collapse entirely under prefers-reduced-motion:
+
+   · THE CARD NEVER RESIZES.  The stage is absolutely positioned over the
+     resting view and the card holds a min-height that fits the taller of the
+     two. A punch that reflowed the KPI grid around it would undo any amount of
+     polish on the animation itself.
+   · ONE PROPERTY PAIR ONLY.  Every keyframe animates transform and opacity and
+     nothing else, so the whole sequence stays on the compositor. The hand
+     angles arrive as custom properties set by JS, which is what lets the
+     keyframes stay static and declarative.
+   · THE SEQUENCE IS IN CSS, THE ORCHESTRATION IN JS.  Durations and easings
+     live here as tokens; renderer.js only starts and ends the phases. Nothing
+     is animated twice from two places.                                      */
+/* The sequence's own timing, kept together so the phases can be read against
+   each other and against ATT_T in renderer.js. Slower than the app's --t-*
+   tokens on purpose: those size a control responding to a click, this is a
+   short piece of narrative, and it wants room to decelerate.
+
+   --att-ease is a gentler out-curve than the global --e-out. --e-out front-
+   loads almost all its travel, which is right for a panel arriving and wrong
+   for a hand winding down — it made the spin look like it stopped dead. */
+.att{
+  --att-t-dial:950ms; --att-t-hands:1750ms; --att-t-sweep:1350ms; --att-t-copy:560ms;
+  --att-ease:cubic-bezier(.16,.86,.26,1);
+  --att-spring:cubic-bezier(.2,1.12,.4,1);
+  /* Sized for the TALLEST resting state — clocked out, three rows plus the
+     readout — and no taller, so the card sits level with the KPI cards beside
+     it and the grid never shifts when a punch lands. */
+  position:relative;display:flex;flex-direction:column;min-height:172px;padding:16px 18px;overflow:hidden;isolation:isolate}
+/* NOT position:relative — the stage anchors to the CARD, not to this box. A
+   punch is a takeover: it covers the title row too, which is what gives the
+   waiting and refused states enough height to sit in without a scrollbar. */
+.att-main{flex:1;min-height:0}
+.att-rest{display:flex;flex-direction:column;height:100%}
+.att-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-top:auto;padding-top:10px}
+/* ── The day's total ── */
+/* A readout, not a footnote. Label small and quiet on top, the figure large
+   and tabular underneath — because while the clock runs this is the only
+   number on the card that moves, and it was previously set at the same 11px as
+   a caption.
+
+   tabular-nums on the FIGURE is what stops the row twitching once a second:
+   proportional digits are different widths, so 11 → 12 would shove the h/m/s
+   letters sideways on every tick. */
+.att-logged{display:flex;flex-direction:column;gap:2px;min-width:0}
+.att-logged-label{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--gray)}
+.att-logged-val{
+  display:inline-flex;align-items:baseline;gap:7px;
+  font-size:19px;font-weight:700;color:var(--navy);line-height:1;letter-spacing:-.4px;
+  font-variant-numeric:tabular-nums}
+/* The unit letters are punctuation on the number, not part of it. */
+.att-seg i{font-style:normal;font-size:11px;font-weight:600;color:var(--gray);margin-left:1px}
+/* Idle has nothing to report, so the figure recedes instead of presenting a
+   row of zeroes as though it were a measurement. */
+.att.is-idle .att-logged-val{color:#cbd5e1}
+.att.is-idle .att-seg i{color:#cbd5e1}
+
+/* ── The Clock In button ── */
+/* This is the primary action of the employee dashboard — the one control on
+   the page the user came to press — and it was rendering as an outline button,
+   the same weight as a Cancel. It takes the filled treatment the button system
+   already reserves for the affirmative action (--btn-ink, per buttons.css),
+   the large size, and a slow attention ring.
+
+   The ring is NOT a hover effect — buttons.css rules those out, and rightly.
+   It is a resting state on the single unstarted action of the page, and it
+   stops the moment the pointer or focus arrives, because at that point the
+   button has the user's attention and no longer needs to ask for it. */
+.att .clock-btn{
+  --btn-h:40px; --btn-px:22px; --btn-fs:13.5px;
+  margin-top:0;float:none;flex-shrink:0;
+  background:var(--btn-ink);color:#fff;border-color:var(--btn-ink)}
+.att .clock-btn:hover{background:var(--btn-solid-hover);border-color:var(--btn-solid-hover);color:#fff}
+.att.is-idle .clock-btn,.att.is-done .clock-btn{animation:att-cta 2.8s var(--e-in-out) infinite}
+.att .clock-btn:hover,.att .clock-btn:focus-visible{animation:none}
+@keyframes att-cta{
+  0%,100%{box-shadow:0 0 0 0 rgba(15,23,42,.26)}
+  55%{box-shadow:0 0 0 7px rgba(15,23,42,0)}
+}
+
+/* ── Which rows belong to which state ── */
+/* While the browser is asking, the field says so rather than showing a stale
+   office name that is about to be replaced. */
+#att-location.is-pending{color:var(--gray);font-weight:500}
+/* The two views swap: a live row while the shift is open, the span summary
+   once it has closed. Never both. */
+.att-span{display:none}
+.att.is-done .att-span{display:flex}
+.att.is-done .att-row-live{display:none}
+/* Narrow card: the icon + label + value row has no give, so the value was being
+   pushed past the card's edge and clipped by its overflow:hidden — which is how
+   "Location" ended up printed with nothing after it. The label yields first, the
+   value truncates last, and the icon never shrinks. */
+.att-row>svg{flex-shrink:0}
+.att.is-done .att-span{flex-wrap:wrap;row-gap:4px}
+
+/* ── The finished shift ──────────────────────────────────────────────────── */
+/* WHAT THIS SCREEN SAYS FIRST IS THE TOTAL. Everything after a shift closes
+   answers one question — how long did I work today — and the two clock times
+   are the evidence for it, not rivals to it. The first pass set both at nearly
+   the same weight (16px vs 19px) so neither led and the eye had to choose.
+   The hierarchy is now explicit: total 24px, times 15px, labels 9.5px.
+
+   Start and end are still ONE fact and are set as one, either side of an
+   arrow — the arrow is what makes it a span rather than a list — but the
+   whole block sits BELOW the headline it supports. */
+.att-span{align-items:flex-end;gap:10px;margin-bottom:6px}
+.att-span-cell{min-width:0}
+.att-span-label{
+  font-size:9.5px;font-weight:700;letter-spacing:.55px;text-transform:uppercase;
+  color:var(--gray);white-space:nowrap}
+.att-span-time{
+  font-size:15px;font-weight:600;color:var(--navy);letter-spacing:-.2px;line-height:1.3;
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+/* Was #cbd5e1 — the same tint the interface uses for "disabled", on the one
+   mark that carries the meaning of the block. Mid-grey: visible, still quiet. */
+.att-span-arrow{width:14px;height:14px;flex-shrink:0;color:#94a3b8;margin-bottom:3px}
+/* The headline. Only on this state — while the clock is running the figure is
+   a live counter sharing the footer with the button, which is a different job. */
+.att.is-done .att-logged-val{font-size:24px;letter-spacing:-.6px}
+/* The label stays quiet grey. Making it navy too put two heavy elements in a
+   two-line block and the figure stopped leading — the size difference is the
+   hierarchy, colour does not need to repeat it. */
+.att.is-done .att-seg i{font-size:12px}
+/* The dot is a state marker, so it has three of them: gone when there is
+   nothing to mark, beating green while the clock runs, solid navy once the day
+   is recorded. Collapsed to zero width at idle rather than left invisible —
+   an empty 7px gap in front of the label is its own kind of untidy. */
+.att-live-dot{
+  width:0;height:7px;border-radius:50%;background:var(--st-ok-fg);
+  opacity:0;transform:scale(.4);
+  transition:width var(--t-fast) var(--e-out),opacity var(--t-fast) var(--e-out),transform var(--t-fast) var(--e-out)}
+.att.is-in .att-live-dot,.att.is-done .att-live-dot{width:7px;opacity:1;transform:none}
+.att.is-in .att-live-dot{animation:att-beat 2s var(--e-in-out) infinite}
+.att.is-done .att-live-dot{background:var(--navy)}
+@keyframes att-beat{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:.4}}
+/* Clocking out is a negative-space action, so the button drops to the outline
+   treatment rather than turning red — see the note in buttons.css. */
+.att.is-in .clock-btn{background:var(--card);color:var(--btn-ink);border:1.5px solid var(--btn-stroke)}
+.att.is-in .clock-btn:hover{color:var(--btn-accent);border-color:var(--btn-accent)}
+
+/* ── The stage ── */
+/* Hidden AND inert between punches: visibility keeps it out of the a11y tree
+   and off the hit-testing pass, opacity does the fade. */
+.att-stage{
+  position:absolute;inset:0;z-index:2;
+  display:flex;align-items:center;justify-content:center;gap:18px;
+  padding:16px 18px;overflow:hidden;
+  background:var(--card);
+  opacity:0;visibility:hidden;pointer-events:none;
+  transition:opacity 340ms var(--att-ease),visibility 0s linear 340ms}
+/* pointer-events must come BACK on while the stage is up — the refusal state
+   has real buttons in it, and a stage that cannot be clicked is a dead end. */
+.att.is-busy .att-stage{opacity:1;visibility:visible;pointer-events:auto;transition-delay:0s,0s}
+/* The resting view recedes under the stage rather than vanishing — it is the
+   same card, not a different screen. */
+.att-rest{transition:opacity 340ms var(--att-ease),transform 340ms var(--att-ease)}
+.att.is-busy .att-rest{opacity:0;transform:scale(.97);pointer-events:none}
+
+/* will-change is scoped to .is-busy so the layers are promoted for the ~2.8s
+   the sequence runs and released the moment it ends — a permanent hint on an
+   idle dashboard card costs memory for nothing. */
+.att.is-busy .att-dial,.att.is-busy .att-hand,.att.is-busy .att-rest{will-change:transform,opacity}
+.att-dial{width:72px;height:72px;flex-shrink:0;overflow:visible;transform-origin:50% 50%}
+.att.is-busy .att-dial{animation:att-dial-in var(--att-t-dial) var(--att-spring) both}
+/* -420deg, not -360: a full turn plus a sixth reads as a wind-up rather than a
+   spin that happens to end where it started. */
+@keyframes att-dial-in{
+  0%{transform:rotate(-420deg) scale(.25);opacity:0}
+  60%{opacity:1}
+  100%{transform:rotate(0deg) scale(1);opacity:1}
+}
+.att-dial-track{fill:none;stroke:var(--ol);stroke-width:4}
+.att-dial-face{fill:var(--light);stroke:none}
+.att-dial-ticks line{stroke:#cbd5e1;stroke-width:1.6;stroke-linecap:round}
+.att-pin{fill:var(--navy)}
+
+/* The sweep ring draws once around the dial as the hands settle. 258 is the
+   circumference at r=41, rounded up so no sliver is left showing. */
+.att-dial-sweep{
+  fill:none;stroke:var(--st-ok-fg);stroke-width:4;stroke-linecap:round;
+  transform:rotate(-90deg);transform-origin:50% 50%;
+  stroke-dasharray:258;stroke-dashoffset:258}
+.att.is-busy .att-dial-sweep{animation:att-sweep var(--att-t-sweep) var(--att-ease) 300ms both}
+.att.is-out .att-dial-sweep{stroke:var(--navy)}
+@keyframes att-sweep{to{stroke-dashoffset:0}}
+
+/* Hands. JS writes --h-deg / --m-deg as "spins + final angle", so the wind-down
+   and the landing are the same animation and cannot disagree about where the
+   hand stops. */
+.att-hand{stroke:var(--navy);stroke-width:3.2;stroke-linecap:round;transform-origin:50% 50%}
+.att-hand-m{stroke-width:2.4;stroke:var(--gray)}
+.att.is-busy .att-hand-h{animation:att-hand-h var(--att-t-hands) var(--att-ease) 150ms both}
+.att.is-busy .att-hand-m{animation:att-hand-m var(--att-t-hands) var(--att-ease) 150ms both}
+@keyframes att-hand-h{from{transform:rotate(var(--h-from,0deg))}to{transform:rotate(var(--h-deg,0deg))}}
+@keyframes att-hand-m{from{transform:rotate(var(--m-from,0deg))}to{transform:rotate(var(--m-deg,0deg))}}
+
+/* The seal strokes on at the end — the punch has been recorded. */
+.att-seal{
+  fill:none;stroke:var(--st-ok-fg);stroke-width:5;stroke-linecap:round;stroke-linejoin:round;
+  stroke-dasharray:44;stroke-dashoffset:44;opacity:0}
+.att.is-sealed .att-seal{animation:att-seal 520ms var(--att-ease) both}
+.att.is-sealed.is-out .att-seal{stroke:var(--navy)}
+@keyframes att-seal{0%{stroke-dashoffset:44;opacity:1}100%{stroke-dashoffset:0;opacity:1}}
+/* Everything the dial was drawn from steps aside for the seal — hands, ticks
+   AND the centre pin. The pin was left behind on the first pass and sat as a
+   stray dot in the middle of the tick. */
+.att.is-sealed .att-hand,.att.is-sealed .att-dial-ticks,.att.is-sealed .att-pin{opacity:0;transition:opacity 300ms var(--att-ease)}
+
+/* ── Waiting on the browser's permission prompt ── */
+/* The punch is held, so the card has to look held. The sweep ring becomes an
+   indeterminate arc — the same stroke already on the dial, just cut short and
+   spun, so nothing new is introduced to say "still working". The hands stay
+   parked on the captured time, because that time IS captured; only the
+   location is outstanding. */
+.att.is-waiting .att-dial-sweep{
+  animation:att-wait-spin 1.15s linear infinite;
+  stroke-dasharray:62 196;stroke-dashoffset:0}
+@keyframes att-wait-spin{from{transform:rotate(-90deg)}to{transform:rotate(270deg)}}
+.att.is-waiting .att-stage-time{font-size:20px;color:var(--gray)}
+
+/* ── Granted: the arc closing into a ring ── */
+/* The spin CONTINUES through this while the dash grows out to the full
+   circumference. Once the ring is closed its rotation is imperceptible, so the
+   spin can stop on the next state without a visible jump — which is the whole
+   trick. Stopping it first and then filling would snap from a random angle. */
+.att.is-resolving .att-dial-sweep{
+  animation:att-wait-spin 1.15s linear infinite,
+            att-ring-close 560ms var(--att-ease) forwards}
+@keyframes att-ring-close{from{stroke-dasharray:62 196}to{stroke-dasharray:258 0}}
+/* Hands and pin start receding during the close rather than at the seal, so
+   the two overlap instead of queueing. */
+.att.is-resolving .att-hand,.att.is-resolving .att-pin{
+  opacity:0;transition:opacity 400ms var(--att-ease) 160ms}
+.att.is-resolving .att-stage-time{color:var(--navy)}
+
+/* ── Refused ── */
+/* Nothing was recorded, so the card says so plainly and stays put until the
+   user chooses what to do about it. Red is correct here — this is a genuine
+   failure state, not a button asking for attention. */
+.att.is-denied .att-dial-sweep{
+  stroke:var(--st-bad-fg);stroke-dasharray:258;stroke-dashoffset:0;animation:none;
+  transform:rotate(-90deg)}
+.att.is-denied .att-hand,.att.is-denied .att-dial-ticks,.att.is-denied .att-pin{opacity:0}
+.att-cross{
+  fill:none;stroke:var(--st-bad-fg);stroke-width:5;stroke-linecap:round;
+  stroke-dasharray:29;stroke-dashoffset:29;opacity:0}
+.att.is-denied .att-cross{opacity:1;animation:att-cross 380ms var(--att-ease) both}
+@keyframes att-cross{to{stroke-dashoffset:0}}
+.att.is-denied .att-stage-time{font-size:14px;color:var(--st-bad-fg)}
+/* This state carries the most copy of any — a wrapped explanation plus two
+   buttons — and the card is deliberately short, so it gets a smaller dial and
+   tighter text rather than being allowed to push the card taller. */
+.att.is-denied .att-stage-sub{color:var(--navy);font-size:11.5px;line-height:1.4}
+.att.is-denied .att-dial{width:56px;height:56px}
+.att.is-denied .att-stage-actions{margin-top:9px}
+
+.att-stage-copy{min-width:0;max-width:290px}
+.att-stage-actions{display:flex;gap:8px;margin-top:11px}
+/* display:flex above outranks the UA's [hidden]{display:none}, so it has to be
+   restated — otherwise the recovery buttons show on every state. */
+.att-stage-actions[hidden]{display:none}
+.att-stage-btn{
+  height:30px;padding:0 13px;border-radius:var(--r-control);
+  background:var(--card);border:1.5px solid var(--btn-stroke);color:var(--btn-ink);
+  font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;
+  transition:background var(--t-micro) ease,border-color var(--t-micro) ease,color var(--t-micro) ease}
+.att-stage-btn:hover{color:var(--btn-accent);border-color:var(--btn-accent)}
+.att-stage-btn.is-primary{background:var(--btn-ink);border-color:var(--btn-ink);color:#fff}
+.att-stage-btn.is-primary:hover{background:var(--btn-solid-hover);border-color:var(--btn-solid-hover);color:#fff}
+/* The Allow button is dropped on the waiting state — the browser's own dialog
+   is already open and a second control claiming to do the same thing is noise.
+   Cancel stays, which is what makes an unlimited wait safe. */
+.att-stage-btn[hidden]{display:none}
+.att-stage-label{font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--gray)}
+.att-stage-time{
+  font-size:27px;font-weight:700;color:var(--navy);letter-spacing:-.6px;line-height:1.15;margin-top:2px;
+  font-variant-numeric:tabular-nums}
+.att-stage-sub{font-size:12px;color:var(--gray);margin-top:2px}
+.att.is-busy .att-stage-copy>*{animation:att-copy-in var(--att-t-copy) var(--att-ease) both}
+.att.is-busy .att-stage-label{animation-delay:380ms}
+.att.is-busy .att-stage-time{animation-delay:480ms}
+.att.is-busy .att-stage-sub{animation-delay:580ms}
+@keyframes att-copy-in{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+/* A REPLAY, not the first run. Same keyframe, but the long opening stagger is
+   wrong on a message that is replacing another one — the delays are cut to a
+   quick cascade so it reads as the copy updating, not as the card starting
+   over. Higher specificity than the rules above, which is what lets it win. */
+.att.is-busy .att-stage-copy.is-recopy>*{animation:att-copy-in 400ms var(--att-ease) both}
+.att.is-busy .att-stage-copy.is-recopy .att-stage-label{animation-delay:0ms}
+.att.is-busy .att-stage-copy.is-recopy .att-stage-time{animation-delay:70ms}
+.att.is-busy .att-stage-copy.is-recopy .att-stage-sub{animation-delay:140ms}
+
+/* On the way back the resting view arrives as new information, because it is. */
+.att.is-settling .att-rest{animation:att-rest-in 340ms var(--att-ease) both}
+@keyframes att-rest-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+
+/* Reduced motion: the sequence still HAPPENS — the stage still shows the time
+   being recorded — it just holds still and gets out of the way quickly. The
+   global rule in motion.css already collapses every duration above; this only
+   removes the transforms that would otherwise land mid-flight. */
+@media (prefers-reduced-motion:reduce){
+  .att-dial,.att-hand,.att-stage-copy>*,.att-rest{animation:none!important;transform:none!important}
+  .att-dial-sweep{stroke-dashoffset:0}
+  .att-seal{opacity:0}
+  .att .clock-btn{animation:none!important}
+}
+.quick-links{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+.ql{padding:8px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px;transition:.15s;color:var(--gray)}
+.ql:hover{background:var(--card);border-color:var(--btn-accent);color:var(--btn-accent)}
+.setup-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:24px}
+.setup-title{font-size:15px;font-weight:600;margin-bottom:4px}
+.setup-sub{font-size:12px;color:var(--gray);margin-bottom:16px}
+.setup-bar{height:6px;background:#f1f3f5;border-radius:3px;margin-bottom:16px;position:relative}
+.setup-fill{height:6px;border-radius:3px;background:var(--navy);transition:.3s}
+.setup-steps{display:flex;gap:12px}
+.setup-step{flex:1;padding:14px;border:1px solid var(--border);border-radius:12px;font-size:12px;display:flex;align-items:flex-start;gap:10px}
+.setup-step.done{border-color:var(--green)}
+.setup-step .ss-name{font-weight:600;font-size:13px;margin-bottom:2px}
+.setup-step .ss-status{font-size:11px;color:var(--green);font-weight:500}
+.setup-step .ss-status.pending{color:var(--gray)}
+.ss-ico{flex-shrink:0;margin-top:1px}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.stat-card{background:var(--card);border-radius:14px;padding:20px;border:1px solid var(--border)}
+.stat-label{font-size:12px;color:var(--gray);font-weight:500;margin-bottom:8px;display:flex;justify-content:space-between;align-items:flex-start}
+.stat-icon{width:34px;height:34px;border-radius:8px;background:rgba(26,26,26,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.stat-icon svg{width:17px;height:17px;stroke:var(--orange);fill:none}
+.stat-val{font-size:26px;font-weight:700}
+.stat-sub{font-size:11px;color:var(--gray);font-weight:500;margin-top:4px}
+.badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:var(--r-status);background:#f1f5f9;color:var(--navy);letter-spacing:.4px}
+.badge.cfg-agent-recommend{background:#f0fdfa;color:#0d9488;border:1px solid #99f6e4;cursor:pointer;transition:background .15s}
+.badge.cfg-agent-recommend:hover{background:#ccfbf1}
+.close-btn{display:flex;align-items:center;gap:6px;height:34px;padding:0 14px;border-radius:18px;border:1px solid var(--border);cursor:pointer;background:var(--card);color:var(--navy);transition:.2s;font-family:inherit;font-size:12px;font-weight:600}
+.close-btn:hover{background:var(--card);border-color:var(--btn-accent);color:var(--btn-accent)}
+.close-btn svg{width:14px;height:14px}
+/* (a second .close-btn:hover used to sit here and reset only the background,
+   so the button hovered grey-with-a-red-label - half of one rule and half of
+   the other.  There is one hover now, on the line above.) */
+/* INPUT BAR */
+.input-area{padding:16px 24px;border-top:1px solid var(--border);background:var(--card);min-width:0;flex-shrink:0;border-radius:24px;max-width:720px;margin:0 auto}
+.input-row{display:flex;align-items:center;gap:10px;background:var(--light);border-radius:18px;padding:10px 12px;border:1.5px solid var(--border);transition:.2s;min-width:0;width:100%}
+.input-row:focus-within{border-color:var(--orange)}
+.input-field{flex:1 1 100%;min-width:0;border:none;outline:none;background:0;font-size:14px;font-family:inherit;padding:12px 14px;color:var(--navy)}
+.icon-btn{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:9px;border:none;cursor:pointer;transition:.2s;background:0;color:var(--gray);flex-shrink:0;position:relative}
+.icon-btn:hover{background:var(--btn-ghost-bg);color:var(--btn-accent)}
+.icon-btn.active{background:var(--orange);color:#fff}
+/* PLUS DROPDOWN */
+.plus-dd{position:absolute;bottom:calc(100% + 8px);left:0;background:var(--card);border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.12);border:1px solid var(--border);padding:6px;min-width:180px;z-index:100;display:none}
+.plus-dd.open{display:block;animation:fadeUp .2s ease}
+.plus-dd-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;color:var(--navy);transition:.1s}
+.plus-dd-item:hover{background:var(--ol)}
+.plus-dd-item svg{width:16px;height:16px;color:var(--orange)}
+/* AGENT SELECTOR */
+.agent-sel{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:8px;border:1px solid var(--border);cursor:pointer;font-size:11px;font-weight:600;color:var(--navy);background:var(--card);font-family:inherit;position:relative;white-space:nowrap;transition:.2s;max-width:150px;min-width:0}
+.agent-sel svg{flex-shrink:0}
+.agent-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.agent-sel:hover{border-color:var(--orange)}
+.agent-dd{position:absolute;bottom:calc(100% + 6px);left:0;background:var(--card);border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.12);border:1px solid var(--border);padding:6px;min-width:200px;z-index:100;display:none}
+.agent-dd.open{display:block;animation:fadeUp .15s ease}
+.agent-dd-hdr{padding:4px 12px 8px;font-size:10px;font-weight:600;color:var(--gray);text-transform:uppercase;letter-spacing:.4px}
+.agent-dd-item{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;cursor:pointer;font-size:12px;transition:.1s}
+.agent-dd-item:hover{background:var(--ol)}
+.agent-dd-item.active{background:var(--ol)}
+.agent-dd-item.disabled{opacity:.45;cursor:default}
+.agent-dd-item .nm{font-weight:600}
+.agent-dd-item .desc{font-size:10px;color:var(--gray)}
+.coming-tag{font-size:9px;font-weight:600;padding:2px 6px;border-radius:var(--r-status);background:#e0e7ef;color:var(--gray);margin-left:auto}
+/* CUSTOM DROPDOWNS */
+.custom-select{position:relative;width:100%;font-family:inherit;z-index:5}
+.custom-select.open{z-index:80}
+/* --r-control, not a hard-coded 10px: a select is something you PICK from, and
+   the shape doctrine at the top of this file reserves the rounded --r-input for
+   fields you type into. It was the only control in the system on its own
+   private radius. */
+.custom-select-trigger{width:100%;min-height:40px;padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--r-control);background:#fff;color:var(--navy);font-size:13px;line-height:1.25;font-family:inherit;display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;transition:border-color .18s,box-shadow .18s;text-align:left}
+.custom-select-trigger:hover{border-color:#c7ccd6}
+.custom-select.open .custom-select-trigger,.custom-select-trigger:focus{border-color:#c7ccd6;box-shadow:0 0 0 3px rgba(15,23,42,.04);outline:0}
+.custom-select-trigger span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.custom-select-trigger .placeholder{color:#a3a8b2;font-weight:400}
+.custom-select-chevron{width:18px;height:18px;flex-shrink:0;color:#111827;transition:transform .18s}
+.custom-select.open .custom-select-chevron{transform:rotate(180deg)}
+.custom-select-menu{position:fixed;display:none;background:#fff;border:1px solid #e1e4ea;border-radius:9px;box-shadow:0 8px 22px rgba(15,23,42,.08);z-index:900;padding:0;max-height:280px;overflow-y:auto}
+.custom-select.open .custom-select-menu{display:block;animation:fadeUp .16s ease}
+.custom-select-option{width:100%;height:54px;border:0;background:#fff;color:#20242c;font-size:13px;font-family:inherit;text-align:left;padding:0 18px 0 36px;display:flex;align-items:center;justify-content:space-between;gap:14px;cursor:pointer;transition:background .12s}
+.custom-select-option:hover{background:#fbf7f1}
+.custom-select-option.selected{font-weight:500}
+.custom-select-check{opacity:0;color:#7d8189;font-size:18px;font-weight:800;line-height:1;flex-shrink:0}
+.custom-select-option.selected .custom-select-check{opacity:1}
+.filter-row .custom-select{width:150px;flex:0 0 150px}
+.filter-row .custom-select-trigger{height:34px;font-size:11px;color:var(--gray);border-radius:var(--r-control);padding:0 10px}
+.filter-row .custom-select-menu{min-width:170px}
+.filter-row .custom-select-option{height:42px;font-size:12px;padding-left:18px}
+.pay-group{overflow:visible}
+.pay-group .custom-select{flex:0 0 116px;width:116px;z-index:15}
+.pay-group .custom-select-trigger{min-height:40px;height:auto;border:0;border-right:1px solid var(--border);border-radius:var(--r-control) 0 0 var(--r-control);background:#fafbfc;font-weight:600;padding:11px 12px;box-shadow:none}
+.pay-group .custom-select-menu{min-width:156px}
+.pay-group .custom-select-option{height:44px;padding-left:18px}
+.plus-dd,.agent-dd{border-radius:9px;border:1px solid #e1e4ea;box-shadow:0 8px 22px rgba(15,23,42,.1);padding:0;overflow:hidden;background:#fff}
+.plus-dd-item,.agent-dd-item{border-radius:0;padding:13px 16px;background:#fff}
+.plus-dd-item:hover,.agent-dd-item:hover,.agent-dd-item.active{background:#fbf7f1}
+.agent-dd-hdr{padding:13px 16px;color:var(--navy);font-size:12px;text-transform:none;letter-spacing:0;border-bottom:1px solid #f0f1f3}
+.agent-dd-item.active span:last-child{color:#7d8189!important;font-size:18px}
+.agent-sel{border-radius:8px;border-color:#d9dde5;background:#fff;padding:8px 11px}
+/* WORKSPACE EMPTY STATE */
+.workspace-empty{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;background:#f4f5f7;padding:48px;min-height:0}
+.workspace-empty-inner{display:flex;flex-direction:column;align-items:center;max-width:280px;color:var(--navy)}
+.workspace-mural{width:164px;height:164px;margin-bottom:14px;color:#b7bdc7}
+.workspace-title{font-size:13px;font-weight:800;margin-bottom:10px;color:#111827}
+.workspace-copy{font-size:11px;line-height:1.45;color:#8b93a1;max-width:230px}
+/* CHAT */
+.chat-area{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px;scrollbar-width:thin;scrollbar-color:rgba(0,0,0,.08) transparent}
+.chat-area::-webkit-scrollbar{width:3px}
+.chat-area::-webkit-scrollbar-track{background:transparent}
+.chat-area::-webkit-scrollbar-thumb{background:rgba(0,0,0,.1);border-radius:99px}
+.chat-area::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,.18)}
+.chat-area::-webkit-scrollbar-button{display:none;height:0;width:0}
+.msg-row{display:flex;gap:8px;animation:fadeUp .3s ease}
+.msg-row.user{justify-content:flex-end}
+.bot-av{width:26px;height:26px;border-radius:8px;background:var(--navy);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.user-av{width:26px;height:26px;border-radius:8px;background:var(--ol);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--orange);flex-shrink:0}
+.bubble{max-width:80%;padding:10px 14px;font-size:13px;line-height:1.5}
+.bubble.bot{border-radius:14px 14px 14px 4px;background:#f1f3f5}
+.bubble.user{border-radius:14px 14px 4px 14px;background:var(--navy);color:#fff}
+.typing-dots{display:flex;gap:4px;padding:12px 16px}
+.typing-dots span{width:5px;height:5px;border-radius:50%;background:var(--gray);animation:blink 1.2s infinite}
+.typing-dots span:nth-child(2){animation-delay:.2s}
+.typing-dots span:nth-child(3){animation-delay:.4s}
+/* AGENT EMPTY */
+#v-agent-empty{position:relative}
+#am-webgl-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:0}
+.am-topbar-glass{position:relative;z-index:10;background:rgba(255,255,255,.82)!important;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.agent-empty-center{position:relative;z-index:1;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;gap:32px}
+.we-icon{width:52px;height:52px;border-radius:14px;background:var(--ol);display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.actions-grid{display:flex;flex-wrap:wrap;gap:12px;max-width:680px;justify-content:center}
+.action-card{padding:16px 20px;background:var(--card);border-radius:14px;border:1.5px solid var(--border);cursor:pointer;transition:.25s;display:flex;align-items:flex-start;gap:14px;flex:1 1 calc(50% - 12px);min-width:260px}
+.action-card:hover{border-color:var(--orange);transform:translateY(-2px);box-shadow:0 4px 14px rgba(26,26,26,.08)}
+.ac-icon{width:36px;height:36px;border-radius:10px;background:var(--ol);display:flex;align-items:center;justify-content:center;color:var(--orange);flex-shrink:0}
+.ac-icon svg{width:18px;height:18px}
+.ac-label{font-weight:600;font-size:13px;margin-bottom:2px}
+.ac-desc{font-size:11px;color:var(--gray);line-height:1.3}
+/* FORM PANEL */
+.form-col{flex:1;display:flex;flex-direction:column;overflow:hidden;background:#f8f9fb}
+.form-panel{flex:1;overflow-y:auto;padding:0;margin:14px;background:var(--card);border-radius:16px;border:1px solid var(--border);box-shadow:0 2px 12px rgba(15,23,42,.04);display:flex;flex-direction:column;min-height:0}
+.fp-body{padding:0 36px 8px;flex:1}
+.fp-shell{padding:28px 36px 0}
+.fp-body{padding:8px 36px 28px;flex:1}
+.fp-foot{padding:18px 36px;border-top:1px solid var(--border);background:#fafbfc;border-radius:0 0 16px 16px}
+/* STEPPER */
+.stepper{display:flex;align-items:center;gap:0;margin-bottom:24px}
+.step-dot{display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0}
+.step-dot .sd-circle{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:#fff;border:2px solid var(--border);color:var(--gray);transition:.25s}
+.step-dot.done .sd-circle{background:#464646;border-color:#464646;color:#fff}
+.step-dot.active .sd-circle{background:#fff;border-color:#464646;color:#464646;box-shadow:0 0 0 4px rgba(70,70,70,.1)}
+.step-dot .sd-label{font-size:10px;font-weight:600;color:var(--gray);white-space:nowrap;letter-spacing:.2px}
+.step-dot.active .sd-label{color:var(--navy)}
+.step-dot.done .sd-label{color:#464646}
+.step-line{flex:1;height:2px;background:var(--border);margin:0 4px;margin-bottom:18px;min-width:14px;border-radius:2px;transition:.3s}
+.step-line.done{background:#464646}
+/* HEADER */
+.fp-title-row{margin-bottom:6px}
+.fp-eyebrow{font-size:11px;font-weight:600;color:#464646;letter-spacing:.6px;text-transform:uppercase;margin-bottom:4px}
+.fp-h1{font-size:20px;font-weight:700;color:var(--navy);margin-bottom:4px;letter-spacing:-.2px}
+.fp-sub{font-size:12.5px;color:var(--gray);line-height:1.5;margin-bottom:22px}
+.section-block{margin-bottom:26px}
+.section-head{font-size:12px;font-weight:700;color:var(--navy);margin-bottom:14px;letter-spacing:.2px;display:flex;align-items:center;gap:8px}
+.section-head::before{content:"";width:3px;height:13px;background:#464646;border-radius:2px}
+/* INPUTS */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px 18px;margin-bottom:8px}
+.form-grid.full{grid-template-columns:1fr}
+.form-field{display:flex;flex-direction:column;gap:6px}
+.form-label{font-size:12px;font-weight:600;color:var(--navy);display:flex;align-items:center;gap:4px}
+.form-label .req{color:var(--orange)}
+.form-input,.form-select{padding:11px 14px;border-radius:10px;border:1.5px solid var(--border);font-size:13px;font-family:inherit;width:100%;outline:none;transition:.2s;color:var(--navy);background:var(--card)}
+.form-input:hover,.form-select:hover{border-color:#cbd5e1}
+.form-input:focus,.form-select:focus{border-color:#464646;box-shadow:0 0 0 3px rgba(70,70,70,.1)}
+.form-input.readonly{background:var(--light);color:var(--navy);border-style:dashed}
+.field-hint{font-size:11px;color:var(--gray);margin-top:2px}
+.field-prefill{font-size:11px;color:var(--orange);display:flex;align-items:center;gap:4px;font-weight:500}
+/* CARD-STYLE RADIOS */
+.choice-grid{display:grid;gap:10px;margin-bottom:8px}
+.choice-grid.cols-2{grid-template-columns:1fr 1fr}
+.choice-card{position:relative;display:flex;align-items:flex-start;gap:11px;padding:14px 16px;border:1.5px solid var(--border);border-radius:12px;cursor:pointer;background:var(--card);transition:.18s;font-family:inherit}
+.choice-card:hover{border-color:#cbd5e1;background:#fafbfc}
+.choice-card.selected{border-color:#464646;background:rgba(70,70,70,.04);box-shadow:0 0 0 1px #464646 inset}
+.choice-card input{position:absolute;opacity:0;pointer-events:none}
+.choice-radio{width:18px;height:18px;border-radius:50%;border:2px solid #cbd5e1;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#fff;transition:.2s;margin-top:1px}
+.choice-card.selected .choice-radio{border-color:#464646}
+.choice-card.selected .choice-radio::after{content:"";width:8px;height:8px;border-radius:50%;background:#464646}
+.choice-body{flex:1;min-width:0;text-align:left}
+.choice-title{font-size:13px;font-weight:600;color:var(--navy);margin-bottom:2px;line-height:1.35}
+.choice-desc{font-size:11.5px;color:var(--gray);line-height:1.4}
+/* SEGMENTED */
+.segmented{display:inline-flex;background:#f1f3f5;border-radius:10px;padding:3px;gap:2px;width:100%}
+.seg-btn{flex:1;padding:9px 14px;border-radius:8px;border:0;background:0;color:var(--gray);font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.seg-btn.active{background:var(--card);color:var(--navy);box-shadow:0 1px 4px rgba(15,23,42,.08)}
+.seg-btn:hover:not(.active){color:var(--btn-accent);background:var(--btn-tint-bg)}
+/* INPUT WITH SUFFIX */
+.input-suffix{display:flex;align-items:stretch;border:1.5px solid var(--border);border-radius:var(--r-input);overflow:hidden;background:var(--card);transition:.2s;max-width:240px}
+.input-suffix:focus-within{border-color:#464646;box-shadow:0 0 0 3px rgba(70,70,70,.1)}
+.input-suffix input{flex:1;border:0;outline:0;padding:11px 14px;font-size:13px;font-family:inherit;color:var(--navy);background:0;width:100%;min-width:0}
+.input-suffix .sfx{padding:0 14px;background:#fafbfc;border-left:1px solid var(--border);display:flex;align-items:center;font-size:12px;font-weight:600;color:var(--gray)}
+/* PAY GROUP */
+.pay-group{display:flex;align-items:stretch;border:1.5px solid var(--border);border-radius:10px;overflow:hidden;background:var(--card);transition:.2s}
+.pay-group:focus-within{border-color:#464646;box-shadow:0 0 0 3px rgba(70,70,70,.1)}
+.pay-group select{border:0;outline:0;padding:0 14px;background:#fafbfc;border-right:1px solid var(--border);font-size:13px;font-family:inherit;font-weight:600;color:var(--navy);cursor:pointer}
+.pay-group input{flex:1;border:0;outline:0;padding:11px 14px;font-size:13px;font-family:inherit;color:var(--navy);background:0;width:100%;min-width:0}
+/* INFO BOX */
+.info-box{background:#fef8ee;border:1px solid #fde5c0;border-radius:12px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start;margin-top:8px;font-size:12px;color:#92400e;line-height:1.5}
+.info-box .ib-icon{flex-shrink:0;width:28px;height:28px;border-radius:8px;background:#fde5c0;display:flex;align-items:center;justify-content:center;color:#b45309}
+.info-box.tip{background:var(--ol);border-color:#d1d5db;color:#1a1a1a}
+.info-box.tip .ib-icon{background:#d1d5db;color:var(--orange)}
+.info-box strong{display:block;font-size:12.5px;margin-bottom:2px;color:#7c2d12}
+/* FORM FOOTER */
+.form-footer{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.prefill-text{font-size:12px;color:var(--orange);display:flex;align-items:center;gap:6px;font-weight:500}
+.prefill-text svg{flex-shrink:0}
+/* Button system moved to the end of this file - see BUTTON SYSTEM. */
+/* LISTING PAGES */
+.listing-page{min-height:100%;display:flex;flex-direction:column;gap:16px;min-width:0;width:100%}
+.listing-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;min-width:0;width:100%}
+.listing-filters{display:flex;flex-direction:column;gap:6px;flex:1;min-width:0;overflow:hidden}
+.filter-label{font-size:12px;font-weight:600;color:var(--navy);margin-bottom:2px}
+.filter-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.filter-select{height:32px;min-width:118px;padding:0 11px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--gray);font-size:11px;font-family:inherit;display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer}
+.filter-select svg{width:12px;height:12px}
+.filter-reset{height:32px;padding:0 16px;border-radius:var(--r-control);font-size:11.5px;font-weight:600;font-family:inherit;cursor:pointer;background:#fff;border:1.5px solid #9ca3af;color:var(--navy);transition:.15s}
+/* .filter-reset/.filter-search hover: buttons.css owns both (outline + filled). */
+.filter-search{height:32px;padding:0 16px;border-radius:var(--r-control);font-size:11.5px;font-weight:600;font-family:inherit;cursor:pointer;background:#1e2530;border:1.5px solid #1e2530;color:#fff;transition:.15s}
+/* (.filter-search hover was here too - same note as the line above.) */
+.listing-stats{display:flex;align-items:stretch;background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;flex-shrink:0;align-self:flex-start}
+.listing-stat{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 22px;min-width:88px;gap:3px;border-right:1px solid var(--border);cursor:pointer;user-select:none;transition:background .12s}
+.listing-stat:last-child{border-right:none}
+.listing-stat:hover{background:#f8fafc}
+.listing-stat.stat-selected{background:var(--row-sel);box-shadow:inset 0 -3px 0 var(--row-sel-rail)}
+.listing-stat-count{font-size:22px;font-weight:700;line-height:1.2}
+.listing-stat-label{font-size:10.5px;font-weight:500;color:var(--gray);white-space:nowrap}
+.listing-stat.active .listing-stat-count,.listing-stat.approved .listing-stat-count{color:var(--st-ok-fg)}
+.listing-stat.inactive .listing-stat-count,.listing-stat.unapproved .listing-stat-count{color:var(--st-bad-fg)}
+.listing-stat.pending .listing-stat-count{color:var(--st-wait-fg)}
+.listing-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow-x:auto;overflow-y:visible;box-shadow:0 1px 2px rgba(15,23,42,.03);min-width:0;width:100%}
+.listing-table{width:100%;min-width:700px;border-collapse:collapse;font-size:12.5px}
+.listing-table th{height:42px;text-align:left;padding:0 16px;color:#111827;font-weight:600;font-size:11px;background:#fafbfc;border-bottom:1px solid var(--border);letter-spacing:.2px;white-space:nowrap}
+.listing-table td{height:48px;padding:0 16px;border-bottom:1px solid #f0f1f3;color:#1a1a1a;vertical-align:middle}
+.listing-table tr:last-child td{border-bottom:0}
+.listing-table tbody tr:hover td{background:#fafbfc}
+.listing-table th:first-child,.listing-table td:first-child{text-align:center;width:60px;font-weight:700}
+.status-pill{display:inline-flex;align-items:center;justify-content:center;min-width:72px;height:24px;padding:0 10px;border-radius:var(--r-status);font-size:11px;font-weight:600;border:1.5px solid;white-space:nowrap}
+.status-pill.active,.status-pill.approved{background:var(--st-ok-bg);color:var(--st-ok-fg);border-color:var(--st-ok-bd)}
+.status-pill.inactive{background:var(--st-bad-bg);color:var(--st-bad-fg);border-color:var(--st-bad-bd)}
+.status-pill.unapproved{background:var(--st-bad-bg);color:var(--st-bad-fg);border-color:var(--st-bad-bd)}
+.status-pill.pending{background:var(--st-wait-bg);color:var(--st-wait-fg);border-color:var(--st-wait-bd)}
+.row-action{width:28px;height:28px;border:0;background:transparent;color:var(--gray);border-radius:6px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.row-action:hover{background:var(--btn-ghost-bg);color:var(--btn-accent)}
+/* .pagination / .page-btn used to be a second, smaller pager used by two
+   listings. Every listing now renders the one in leaves.css - see listPage()
+   in js/core.js - so these rules are gone rather than left to be picked up
+   again by a future page and reintroduce the split. */
+/* CONTRACT LOADER */
+.contract-loader{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:14px;padding:60px 40px;text-align:center}
+.cl-spinner{width:46px;height:46px;border:3px solid #f1f3f5;border-top-color:var(--orange);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}
+.cl-title{font-size:17px;font-weight:700;color:var(--navy);letter-spacing:-.2px;animation:cl-pulse 1.8s ease-in-out infinite}
+.cl-sub{font-size:12.5px;color:var(--gray);line-height:1.5}@keyframes spin{to{transform:rotate(360deg)}}@keyframes cl-pulse{0%,100%{opacity:1}50%{opacity:.6}}
+.contract-loader{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:14px;padding:60px 40px;text-align:center}
+.cl-spinner{width:46px;height:46px;border:3px solid #f1f3f5;border-top-color:var(--orange);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}
+.cl-title{font-size:17px;font-weight:700;color:var(--navy);letter-spacing:-.2px;animation:cl-pulse 1.8s ease-in-out infinite}
+.cl-sub{font-size:12.5px;color:var(--gray);line-height:1.5}
+.agent-workspace-btn{position:fixed;bottom:28px;right:28px;width:56px;height:56px;border-radius:50%;background:var(--navy);border:none;cursor:pointer;display:none;align-items:center;justify-content:center;color:#fff;box-shadow:0 4px 16px rgba(15,23,42,.22);transition:all .25s cubic-bezier(.4,0,.2,1);z-index:65}
+.agent-workspace-btn:hover{background:var(--btn-solid-hover);transform:scale(1.08);box-shadow:0 8px 24px rgba(15,23,42,.28)}
+.agent-workspace-btn svg{width:24px;height:24px;color:var(--orange)}
+.agent-module-content{flex:1;overflow-y:auto;padding:28px 32px;background:var(--light)}
+/* SUCCESS */
+.success-card{text-align:center;padding:60px 40px;display:flex;flex-direction:column;align-items:center}
+.success-check{width:88px;height:88px;border-radius:50%;background:var(--st-ok-bg);display:flex;align-items:center;justify-content:center;margin-bottom:24px;position:relative;animation:popIn .5s cubic-bezier(.34,1.56,.64,1)}
+.success-check::before{content:"";position:absolute;inset:-8px;border-radius:50%;border:2px solid var(--st-ok-bd);opacity:.6}
+.success-check svg{width:40px;height:40px;color:var(--green)}
+@keyframes popIn{0%{transform:scale(.3);opacity:0}60%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+.success-meta{display:inline-flex;align-items:center;gap:8px;background:#f1f5f9;color:var(--navy);padding:6px 14px;border-radius:20px;font-size:11.5px;font-weight:600;margin-bottom:24px}
+/* REVIEW */
+.review-section{background:#fff;border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:14px;transition:.2s}
+.review-section:hover{border-color:#f1c27a;background:#fffdf9;box-shadow:0 2px 10px rgba(15,23,42,.04)}
+.review-title{display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:800;color:#050b18;margin-bottom:14px}
+.review-edit{font-size:11px;color:var(--orange);font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:4px;background:var(--ol);border:1px solid #d1d5db;border-radius:var(--r-control);padding:5px 10px;font-family:inherit;transition:.18s}
+.review-edit:hover{background:var(--card);border-color:var(--btn-accent);color:var(--btn-accent);transform:translateY(-1px)}
+.review-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 24px}
+.review-row{display:flex;flex-direction:column;gap:2px;padding:6px 0;font-size:12.5px;min-width:0;color:#050b18}
+.review-row .rr-label{color:#4b5563;font-weight:500;font-size:11.5px}
+.review-row .rr-val{font-weight:700;color:#050b18;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.review-row .rr-val.empty{color:#b8c0cc;font-style:italic;font-weight:600}
+/* LEAVE TABLE */
+.leave-table{width:100%;border-collapse:separate;border-spacing:0;margin-bottom:8px;font-size:12.5px;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.leave-table th{text-align:left;padding:11px 14px;background:#fafbfc;color:var(--navy);font-weight:600;font-size:11.5px;border-bottom:1px solid var(--border)}
+.leave-table td{padding:12px 14px;border-bottom:1px solid var(--border);color:var(--navy)}
+.leave-table tr:last-child td{border-bottom:0}
+.leave-table .lt-name{font-weight:600}
+.leave-table .lt-add{color:var(--orange);font-weight:500;cursor:pointer}
+.leave-table .lt-total{font-weight:700}
+.add-link{font-size:12px;color:var(--orange);font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px;padding:8px 0;background:0;border:0;font-family:inherit}
+.add-link:hover{text-decoration:underline}
+/* == SEARCH OVERLAY == */
+#search-overlay{position:fixed;inset:0;z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding-top:80px;opacity:0;pointer-events:none;transition:opacity .18s ease}
+#search-overlay.open{opacity:1;pointer-events:all}
+#search-overlay .search-backdrop{position:absolute;inset:0;background:rgba(10,14,20,.45);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+#search-overlay .search-box{position:relative;z-index:1;width:100%;max-width:560px;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,.18),0 2px 8px rgba(0,0,0,.08);overflow:hidden;transform:translateY(-12px) scale(.97);transition:transform .18s ease}
+#search-overlay.open .search-box{transform:translateY(0) scale(1)}
+#search-overlay .search-input-row{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid #f0f0f0}
+#search-overlay .search-input-row svg{flex-shrink:0;color:#9ca3af}
+#search-overlay .search-input-row input{flex:1;border:0;outline:0;font-size:15px;font-family:inherit;color:#1a1a1a;background:transparent;line-height:1.5}
+#search-overlay .search-input-row input::placeholder{color:#b0b8c4}
+#search-overlay .search-input-row .search-clear{width:22px;height:22px;border-radius:50%;background:#f0f0f0;border:0;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;opacity:0;transition:opacity .12s}
+#search-overlay .search-input-row .search-clear.visible{opacity:1}
+#search-overlay .search-hints{padding:10px 18px 14px;display:flex;flex-wrap:wrap;gap:6px}
+#search-overlay .search-hint-chip{padding:5px 12px;border-radius:var(--r-control);background:#f5f5f5;border:1px solid #ebebeb;font-size:12px;color:#555;cursor:pointer;font-family:inherit;transition:background .12s}
+#search-overlay .search-hint-chip:hover{background:var(--btn-ghost-bg);border-color:var(--btn-accent);color:var(--btn-accent)}
+#search-overlay .search-footer{padding:8px 18px;background:#fafafa;border-top:1px solid #f0f0f0;display:flex;align-items:center;gap:6px;font-size:11px;color:#b0b8c4}
+#search-overlay .search-footer kbd{background:#f0f0f0;border:1px solid #e0e0e0;border-radius:4px;padding:1px 5px;font-size:10px;color:#555;font-family:inherit}
+/* ===== LEAVE POLICIES PAGE ===== */
+.lp-page{display:flex;flex-direction:column;gap:16px;min-width:0;width:100%}
+.lp-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.lp-title{font-size:26px;font-weight:700;color:var(--navy);margin-bottom:6px;display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.lp-subtitle{font-size:12px;color:var(--gray)}
+.lp-role-badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:var(--r-status);font-size:11px;font-weight:600;border:1px solid}
+.lp-role-badge.manager{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
+.lp-role-badge.hr{background:var(--st-ok-bg);color:var(--st-ok-fg);border-color:var(--st-ok-bd)}
+.lp-role-badge.super-admin{background:#faf5ff;color:#7e22ce;border-color:#e9d5ff}
+.lp-add-btn{display:flex;align-items:center;gap:6px;padding:9px 18px;background:var(--orange);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:.2s;white-space:nowrap;flex-shrink:0}
+.tb-page-add{width:22px;height:22px;border-radius:50%;background:var(--orange);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;transition:.15s;flex-shrink:0;padding:0;margin-left:6px}
+.tb-page-add:hover{background:var(--btn-solid-hover);transform:scale(1.08)}
+.tb-cost-calc{display:flex;align-items:center;gap:6px;height:28px;padding:0 12px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;color:var(--navy);background:#fff;font-family:inherit;transition:.15s;margin-left:8px;white-space:nowrap}
+/* .tb-cost-calc hover: buttons.css owns it (outline). */
+/* The filter bar sits ABOVE the table it filters, in paint order as well as on
+   screen. Its dropdowns open downwards over the first rows, and the table card
+   is a later sibling, so without this the card wins on DOM order alone. The
+   real culprit was the page-entrance fill mode (see motion.css); this is the
+   belt-and-braces that also covers the ~370ms while that animation runs. */
+.lp-filter-bar{padding:14px 0 10px;position:relative;z-index:30}
+.filter-row{position:relative;z-index:30}
+.lp-filter-bar-label{font-size:10.5px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px}
+.lp-filter-bar-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.lp-filter-bar-row .cs-wrap{width:auto;min-width:120px}
+.lp-filter-bar-row .cs-trigger{height:34px;border-radius:var(--r-control);padding:0 14px;font-size:13px;white-space:nowrap}
+.lp-filter-bar-row .cs-dropdown{border-radius:12px;min-width:160px;top:calc(100% + 5px)}
+.lp-pill-select{height:34px;box-sizing:border-box;max-width:180px;text-overflow:ellipsis;border:1.5px solid var(--border);border-radius:var(--r-control);padding:0 28px 0 14px;font-size:13px;color:var(--navy);background:#fff;appearance:none;cursor:pointer;font-family:inherit;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;outline:none;min-width:110px;transition:.15s}
+.lp-pill-select:focus{border-color:var(--orange)}
+.lp-pill-clear{display:inline-flex;align-items:center;gap:6px;height:34px;box-sizing:border-box;padding:0 12px 0 11px;border:1.5px solid var(--border);border-radius:var(--r-control);font-size:13px;font-weight:600;color:var(--navy);background:#fff;cursor:pointer;font-family:inherit;transition:.15s;white-space:nowrap}
+/* .lp-pill-clear hover: buttons.css owns it (outline). */
+.lp-pill-clear svg{width:12px;height:12px;flex-shrink:0;color:var(--gray)}
+.lp-pill-clear:hover svg{color:var(--btn-accent)}
+.lp-pill-clear-count{font-size:11px;font-weight:700;line-height:1;padding:3px 6px;border-radius:var(--r-status);background:var(--navy);color:#fff}
+.lp-pill-search{height:34px;box-sizing:border-box;padding:0 20px;border:none;border-radius:var(--r-control);font-size:13px;color:#fff;background:#1e293b;cursor:pointer;font-family:inherit;transition:.15s;font-weight:600}
+/* .lp-pill-search hover: buttons.css owns it (filled). */
+.lp-filter-card{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:4px 0}
+.lp-select{border:1px solid var(--border);border-radius:8px;padding:8px 28px 8px 12px;font-size:13px;color:var(--navy);background:#fff;appearance:none;cursor:pointer;font-family:inherit;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;outline:none;min-width:120px}
+.lp-select:focus{border-color:var(--orange)}
+.lp-clear-btn{display:flex;align-items:center;gap:6px;padding:8px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--gray);background:var(--card);cursor:pointer;font-family:inherit;transition:.15s}
+/* .lp-clear-btn hover: buttons.css owns it (outline). */
+.lp-table-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow-x:auto;overflow-y:visible;min-width:0;width:100%}
+.lp-table{width:100%;min-width:680px;border-collapse:collapse}
+.lp-table th{padding:11px 16px;text-align:left;font-size:10.5px;font-weight:600;color:var(--gray);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border);background:#fafbfc;white-space:nowrap}
+.lp-table td{padding:13px 16px;font-size:13px;color:var(--navy);border-bottom:1px solid #f1f3f5;vertical-align:middle}
+.lp-table tr:last-child td{border-bottom:none}
+.lp-table tbody tr:hover td{background:#fafbfc}
+
+/* ── TWO-LINE TABLE CELLS ──────────────────────────────────────────────────
+   One value with its qualifier underneath: a name over its reference, a
+   document over its type, a figure over what the figure means. Listings kept
+   re-inventing this inline, which is how a column ends up 90px wide with a
+   three-word name wrapped across three lines — the styles were per-cell so
+   nothing was setting a width or stopping the wrap.
+
+   The rule that matters is `white-space:nowrap` on the primary line. A table
+   column sizes itself to its content, so one wrapping cell lets the browser
+   collapse the column to its longest WORD instead of its longest VALUE. The
+   sub-line is allowed to wrap because it is secondary; if it must not, the
+   cell gets .lp-c-tight. */
+.lp-c-n{color:var(--gray);font-size:13px;white-space:nowrap}
+.lp-c-main{font-weight:600;color:var(--navy);line-height:1.35;white-space:nowrap}
+.lp-c-name{color:var(--orange);font-weight:500;line-height:1.35}
+.lp-c-plain{color:var(--navy);font-size:13px;line-height:1.35;white-space:nowrap}
+.lp-c-plain.is-none{color:#9ca3af}
+.lp-c-plain.is-urgent{color:var(--st-bad-fg);font-weight:600}
+.lp-c-sub{font-size:11px;color:#9ca3af;margin-top:2px;line-height:1.3}
+.lp-c-tight .lp-c-sub{white-space:nowrap}
+/* A long free-text cell truncates rather than pushing every other column thin.
+   The full value is on the row's title attribute and in the detail panel. */
+.lp-c-clip{
+  display:block;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  color:var(--orange);font-weight:500}
+.lp-yes{color:var(--st-ok-fg);font-weight:600}
+.lp-no{color:#dc2626;font-weight:600}
+.lp-dash{color:#9ca3af}
+.lp-status-badge{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:3px 12px;border-radius:var(--r-status);font-size:11px;font-weight:600;border:1.5px solid transparent;white-space:nowrap;min-width:68px}
+/* ══ STATUS COLOURS ═══════════════════════════════════════════════════
+   Generated from SB_STATUS_TONE + CT_PIPELINE_STEP in core.js. A status gets
+   its pipeline colour if it is a contract stage, otherwise its tone colour.
+   Add a status to those maps, not a rule here.
+     ok green | wait amber | bad red | info blue | idle grey
+     p1..p8   contract pipeline, cool -> warm in stage order
+   ═════════════════════════════════════════════════════════════════════ */
+.lp-status-badge.active,.ct-sb-badge.active,.lp-status-badge.approved,.ct-sb-badge.approved,.lp-status-badge.complete,.ct-sb-badge.complete,.lp-status-badge.completed,.ct-sb-badge.completed,.lp-status-badge.connected,.ct-sb-badge.connected,.lp-status-badge.paid,.ct-sb-badge.paid,.lp-status-badge.present,.ct-sb-badge.present,.lp-status-badge.resolved,.ct-sb-badge.resolved,.lp-status-badge.signed,.ct-sb-badge.signed,.lp-status-badge.success,.ct-sb-badge.success,.lp-status-badge.verified,.ct-sb-badge.verified{background:var(--st-ok-bg);color:var(--st-ok-fg);border-color:var(--st-ok-bd)}
+.lp-status-badge.draft,.ct-sb-badge.draft,.lp-status-badge.in-progress,.ct-sb-badge.in-progress,.lp-status-badge.inprog,.ct-sb-badge.inprog,.lp-status-badge.on-hold,.ct-sb-badge.on-hold,.lp-status-badge.pending,.ct-sb-badge.pending,.lp-status-badge.pending-onboarding,.ct-sb-badge.pending-onboarding,.lp-status-badge.under-review,.ct-sb-badge.under-review,.lp-status-badge.unfilled,.ct-sb-badge.unfilled,.lp-status-badge.unpaid,.ct-sb-badge.unpaid,.lp-status-badge.waiting-client,.ct-sb-badge.waiting-client,.lp-status-badge.waiting-csm,.ct-sb-badge.waiting-csm,.lp-status-badge.waiting-for-approval,.ct-sb-badge.waiting-for-approval{background:var(--st-wait-bg);color:var(--st-wait-fg);border-color:var(--st-wait-bd)}
+.lp-status-badge.absent,.ct-sb-badge.absent,.lp-status-badge.blocked,.ct-sb-badge.blocked,.lp-status-badge.canceled,.ct-sb-badge.canceled,.lp-status-badge.cancelled,.ct-sb-badge.cancelled,.lp-status-badge.disconnected,.ct-sb-badge.disconnected,.lp-status-badge.exception,.ct-sb-badge.exception,.lp-status-badge.expired,.ct-sb-badge.expired,.lp-status-badge.failed,.ct-sb-badge.failed,.lp-status-badge.inactive,.ct-sb-badge.inactive,.lp-status-badge.overdue,.ct-sb-badge.overdue,.lp-status-badge.rejected,.ct-sb-badge.rejected,.lp-status-badge.terminated,.ct-sb-badge.terminated,.lp-status-badge.unapproved,.ct-sb-badge.unapproved{background:var(--st-bad-bg);color:var(--st-bad-fg);border-color:var(--st-bad-bd)}
+.lp-status-badge.created,.ct-sb-badge.created,.lp-status-badge.new,.ct-sb-badge.new,.lp-status-badge.open,.ct-sb-badge.open,.lp-status-badge.scheduled,.ct-sb-badge.scheduled,.lp-status-badge.updated,.ct-sb-badge.updated{background:var(--st-info-bg);color:var(--st-info-fg);border-color:var(--st-info-bd)}
+.lp-status-badge.archived,.ct-sb-badge.archived,.lp-status-badge.closed,.ct-sb-badge.closed{background:var(--st-idle-bg);color:var(--st-idle-fg);border-color:var(--st-idle-bd)}
+/* contract pipeline, in stage order */
+.lp-status-badge.submitted,.ct-sb-badge.submitted{background:var(--st-p1-bg);color:var(--st-p1-fg);border-color:var(--st-p1-bd)}  /* p1 Submitted */
+.lp-status-badge.quotation-approved,.ct-sb-badge.quotation-approved{background:var(--st-p2-bg);color:var(--st-p2-fg);border-color:var(--st-p2-bd)}  /* p2 Quotation Approved */
+.lp-status-badge.proposal-sent,.ct-sb-badge.proposal-sent{background:var(--st-p3-bg);color:var(--st-p3-fg);border-color:var(--st-p3-bd)}  /* p3 Proposal Sent */
+.lp-status-badge.proposal-approved,.ct-sb-badge.proposal-approved{background:var(--st-p4-bg);color:var(--st-p4-fg);border-color:var(--st-p4-bd)}  /* p4 Proposal Approved */
+.lp-status-badge.contract-sent,.ct-sb-badge.contract-sent{background:var(--st-p5-bg);color:var(--st-p5-fg);border-color:var(--st-p5-bd)}  /* p5 Contract Sent */
+.lp-status-badge.contract-approved,.ct-sb-badge.contract-approved{background:var(--st-p6-bg);color:var(--st-p6-fg);border-color:var(--st-p6-bd)}  /* p6 Contract Approved */
+.lp-status-badge.onboarding,.ct-sb-badge.onboarding{background:var(--st-p7-bg);color:var(--st-p7-fg);border-color:var(--st-p7-bd)}  /* p7 Onboarding */
+.lp-status-badge.ready-for-payroll,.ct-sb-badge.ready-for-payroll{background:var(--st-p8-bg);color:var(--st-p8-fg);border-color:var(--st-p8-bd)}  /* p8 Ready for Payroll */
+.lp-status-badge.tone-ok,.ct-sb-badge.tone-ok{background:var(--st-ok-bg);color:var(--st-ok-fg);border-color:var(--st-ok-bd)}
+.lp-status-badge.tone-wait,.ct-sb-badge.tone-wait{background:var(--st-wait-bg);color:var(--st-wait-fg);border-color:var(--st-wait-bd)}
+.lp-status-badge.tone-bad,.ct-sb-badge.tone-bad{background:var(--st-bad-bg);color:var(--st-bad-fg);border-color:var(--st-bad-bd)}
+.lp-status-badge.tone-info,.ct-sb-badge.tone-info{background:var(--st-info-bg);color:var(--st-info-fg);border-color:var(--st-info-bd)}
+.lp-status-badge.tone-idle,.ct-sb-badge.tone-idle{background:var(--st-idle-bg);color:var(--st-idle-fg);border-color:var(--st-idle-bd)}
+.lp-status-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
+.lp-info-row{padding:12px 20px;border-top:1px solid var(--border);display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--gray)}
+/* ===== EDIT LEAVE POLICY PAGE ===== */
+.ep-page{display:flex;flex-direction:column;gap:18px;min-width:0;width:100%}
+.ep-breadcrumb{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--gray)}
+.ep-breadcrumb a{color:var(--orange);text-decoration:none;font-weight:500}
+.ep-breadcrumb a:hover{text-decoration:underline}
+.ep-breadcrumb-sep{color:#d1d5db}
+.ep-back{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:500;color:var(--navy);cursor:pointer;background:none;border:none;padding:0;font-family:inherit;transition:.15s;margin-top:8px}
+.ep-back:hover{color:var(--orange)}
+.ep-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.ep-title-wrap{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ep-title{font-size:22px;font-weight:700;color:var(--navy)}
+.ep-actions{display:flex;align-items:center;gap:10px}
+.ep-cancel-btn{padding:8px 20px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;color:var(--navy);background:var(--card);cursor:pointer;font-family:inherit;transition:.15s}
+/* .ep-cancel-btn hover: buttons.css owns it (outline). */
+.ep-save-btn{padding:8px 20px;border:none;border-radius:8px;font-size:13px;font-weight:600;color:#fff;background:var(--orange);cursor:pointer;font-family:inherit;transition:.15s}
+.ep-summary-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;min-width:0;overflow:hidden}
+.ep-summary-left{display:flex;align-items:center;gap:14px}
+.ep-summary-icon{width:46px;height:46px;border-radius:10px;background:var(--st-ok-bg);border:1px solid var(--st-ok-bd);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ep-summary-name{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:5px}
+.ep-summary-meta{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--gray);flex-wrap:wrap}
+.ep-summary-sep{color:#d1d5db}
+.ep-status-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:var(--r-status);font-size:11px;font-weight:600;background:var(--st-ok-bg);color:var(--st-ok-fg)}
+.ep-status-dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+.ep-stats{display:flex;align-items:center;gap:0;flex-shrink:0}
+.ep-stat{text-align:center;padding:0 20px;border-left:1px solid var(--border)}
+.ep-stat:first-child{border-left:none}
+.ep-stat-label{font-size:10px;color:var(--gray);font-weight:500;margin-bottom:4px;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap}
+.ep-stat-val{font-size:20px;font-weight:700;color:var(--navy)}
+.ep-stat-val.green{color:var(--st-ok-fg)}
+.ep-form-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px;min-width:0;overflow:hidden}
+.ep-form-title{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.ep-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.ep-form-group{display:flex;flex-direction:column;gap:6px}
+.ep-form-label{font-size:12px;font-weight:600;color:var(--navy)}
+.ep-form-label span.req{color:#ef4444}
+.ep-form-input{padding:9px 12px;border:1px solid var(--border);border-radius:var(--r-input);font-size:13px;color:var(--navy);font-family:inherit;outline:none;transition:.15s;width:100%;box-sizing:border-box}
+/* Date/time fields open a picker - they are choosers, so they take the square
+   control shape even though they sit on .ep-form-input with the input shape. */
+input[type="date"],input[type="month"],input[type="time"],input[type="datetime-local"]{border-radius:var(--r-control)}
+/* ...but inside a form card the two shapes land side by side in one grid, and a
+   pill text field next to a square dropdown reads as a mistake rather than as a
+   signal. The type-vs-pick distinction earns its keep on standalone controls -
+   a toolbar search, a filter pill - where there is nothing to be out of step
+   with. In a form, agreeing with the field next to you wins, so every control
+   in a form card takes the control shape.
+   The height line is the same argument: a native date input measures ~2px
+   taller than a text input at identical padding, which shows up as a step in
+   the row it shares. */
+.ep-form-card .ep-form-input,
+.ep-form-card .ep-emp-search,
+.ep-form-grid .ep-form-input,
+.ep-form-grid .ep-emp-search,
+.lp-sb-form-grid .ep-form-input,
+.lp-sb-form-grid .ep-emp-search{border-radius:var(--r-control)}
+.ep-form-card input[type="date"].ep-form-input,
+.ep-form-card input[type="time"].ep-form-input,
+.ep-form-card input[type="month"].ep-form-input,
+.ep-form-card input[type="datetime-local"].ep-form-input,
+.lp-sb-form-grid input[type="date"].ep-form-input,
+.lp-sb-form-grid input[type="time"].ep-form-input,
+.lp-sb-form-grid input[type="month"].ep-form-input,
+.lp-sb-form-grid input[type="datetime-local"].ep-form-input{height:36px}
+.ep-form-input:focus{border-color:var(--orange);box-shadow:0 0 0 2px rgba(26,26,26,.1)}
+.ai-ct-field-fill{background:var(--ol)!important;border-color:var(--orange)!important;transition:background .25s,border-color .25s}
+.ep-form-select{padding:9px 28px 9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--navy);font-family:inherit;appearance:none;background:#fff;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;outline:none;cursor:pointer;transition:.15s;width:100%;box-sizing:border-box}
+.ep-form-select:focus{border-color:var(--orange);box-shadow:0 0 0 2px rgba(26,26,26,.1)}
+.ep-form-full{grid-column:1/-1}
+.ai-wizard-form-card{padding:28px 30px}
+.ai-wizard-form-grid{row-gap:26px;column-gap:32px}
+.ai-wizard-form-grid .ep-form-group{gap:8px}
+.ep-emp-search{display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:var(--r-input);padding:8px 12px;background:var(--card);margin-bottom:10px;transition:.15s}
+.ep-emp-search:focus-within{border-color:var(--orange);box-shadow:0 0 0 2px rgba(26,26,26,.1)}
+.ep-emp-search input{border:none;outline:none;font-size:13px;color:var(--navy);background:transparent;flex:1;font-family:inherit}
+.ep-emp-search input::placeholder{color:#9ca3af}
+.ep-emp-tags{display:flex;flex-wrap:wrap;gap:7px}
+.ep-emp-tag{display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 12px;border:1px solid var(--border);border-radius:var(--r-status);font-size:12px;color:var(--navy);background:#f8f9fb}
+.ep-emp-tag button{border:none;background:none;cursor:pointer;color:#9ca3af;line-height:1;padding:0;font-size:14px;transition:.1s}
+.ep-emp-tag button:hover{background:var(--btn-ghost-bg);color:var(--btn-accent)}
+/* ===== EMPLOYEE DUAL-PANE SELECTOR ===== */
+.emp-selector{border:1px solid var(--border);border-radius:12px;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;min-height:320px}
+.emp-sel-pane{display:flex;flex-direction:column;min-height:0}
+.emp-sel-pane:first-child{border-right:1px solid var(--border)}
+.emp-sel-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fafbfc;border-bottom:1px solid var(--border);flex-shrink:0}
+.emp-sel-title{font-size:10.5px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.6px;display:flex;align-items:center;gap:7px}
+.emp-sel-count{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:10px;font-size:10px;font-weight:700;background:#e8edf4;color:#374151}
+.emp-sel-count.has-selection{background:#e5e7eb;color:var(--navy)}
+.emp-sel-clear{font-size:11.5px;font-weight:600;color:#ef4444;background:none;border:none;cursor:pointer;padding:2px 6px;border-radius:5px;font-family:inherit;transition:.12s}
+.emp-sel-clear:hover{background:var(--btn-ghost-bg);color:var(--btn-accent)}
+.emp-sel-search-wrap{padding:8px 10px;border-bottom:1px solid var(--border);flex-shrink:0}
+.emp-sel-search{display:flex;align-items:center;gap:7px;background:#f4f6f9;border-radius:var(--r-input);padding:6px 10px;transition:.15s}
+.emp-sel-search:focus-within{background:#fff;box-shadow:0 0 0 2px rgba(26,26,26,.15)}
+.emp-sel-search input{border:none;outline:none;font-size:12.5px;color:var(--navy);background:transparent;flex:1;font-family:inherit}
+.emp-sel-search input::placeholder{color:#9ca3af}
+.emp-sel-filters{display:flex;align-items:center;gap:4px;padding:7px 10px;border-bottom:1px solid var(--border);flex-wrap:wrap;flex-shrink:0}
+.emp-sel-filter{padding:3px 10px;border-radius:var(--r-control);font-size:11px;font-weight:600;border:1px solid transparent;cursor:pointer;font-family:inherit;background:transparent;color:#6b7280;transition:.12s}
+.emp-sel-filter:hover{background:var(--btn-ghost-bg);color:var(--btn-accent)}
+.emp-sel-filter.active{background:#f1f5f9;color:var(--orange);border-color:#d1d5db}
+.emp-sel-list{flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(0,0,0,.08) transparent}
+.emp-sel-list::-webkit-scrollbar{width:3px}
+.emp-sel-list::-webkit-scrollbar-thumb{background:rgba(0,0,0,.1);border-radius:99px}
+.emp-sel-item{display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;transition:background .12s;border-bottom:1px solid #f5f6f8}
+.emp-sel-item:last-child{border-bottom:none}
+.emp-sel-item:hover{background:var(--row-hover)}
+.emp-sel-item.selected{background:var(--row-sel)}
+.emp-sel-item.selected:hover{background:var(--row-sel-hover)}
+.emp-sel-avatar{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;flex-shrink:0;color:#fff}
+.emp-sel-info{flex:1;min-width:0}
+.emp-sel-name{font-size:12.5px;font-weight:600;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.emp-sel-meta{font-size:11px;color:#9ca3af;margin-top:1px}
+.emp-sel-dept{display:inline-block;padding:1px 7px;border-radius:4px;font-size:10px;font-weight:600;flex-shrink:0}
+.emp-sel-add{width:24px;height:24px;border-radius:6px;border:1.5px solid #d1d5db;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#6b7280;transition:.12s;flex-shrink:0;font-size:15px;line-height:1;font-family:inherit}
+.emp-sel-add:hover{background:var(--card);border-color:var(--btn-accent);color:var(--btn-accent)}
+.emp-sel-item.selected .emp-sel-add{border-color:var(--st-ok-fg);background:var(--st-ok-bg);color:var(--st-ok-fg)}
+.emp-sel-remove{width:22px;height:22px;border-radius:6px;border:none;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#9ca3af;transition:.12s;flex-shrink:0;font-size:14px;font-family:inherit}
+.emp-sel-remove:hover{background:var(--btn-ghost-bg);color:var(--btn-accent)}
+.emp-sel-footer{padding:8px 12px;background:#fafbfc;border-top:1px solid var(--border);flex-shrink:0}
+.emp-sel-add-all{width:100%;padding:7px;border-radius:7px;border:1.5px dashed #d1d5db;background:transparent;font-size:12px;font-weight:600;color:#6b7280;cursor:pointer;font-family:inherit;transition:.15s;display:flex;align-items:center;justify-content:center;gap:5px}
+.emp-sel-add-all:hover{background:var(--card);border-color:var(--btn-accent);color:var(--btn-accent)}
+.emp-sel-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;color:#9ca3af;text-align:center;gap:8px;flex:1}
+.emp-sel-empty svg{opacity:.35}
+.emp-sel-empty-text{font-size:12.5px;font-weight:500}
+.emp-sel-empty-sub{font-size:11.5px;color:#b0b8c4}
+/* QUICK COMPARISON */
+.qcmp-wrap{margin-top:28px;margin-bottom:0}
+.qcmp-label{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--navy);background:#f1f5f9;padding:4px 12px;border-radius:var(--r-status)}
+.qcmp-section-title{font-size:16px;font-weight:700;color:var(--navy);margin-bottom:16px}
+.qcmp-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.qcmp-table{width:100%;border-collapse:collapse}
+.qcmp-th-brand{padding:16px 20px;text-align:center}
+.qcmp-brand-adt{background:linear-gradient(135deg,#1a1a1a,#3f3f46);color:#fff}
+.qcmp-brand-deel{background:linear-gradient(135deg,#1e293b,#334155);color:#fff}
+.qcmp-brand-name{font-size:15px;font-weight:800;display:block}
+.qcmp-brand-tag{font-size:10px;opacity:.8;display:block;margin-top:2px}
+.qcmp-tr{border-bottom:1px solid var(--border)}
+.qcmp-tr:last-child{border-bottom:none}
+.qcmp-tr:hover td{background:#fafbfc}
+.qcmp-td-crit{padding:12px 20px;font-size:12px;font-weight:600;color:#374151;border-right:1px solid var(--border)}
+.qcmp-td-val{padding:12px 20px;text-align:center;font-size:12px;font-weight:600;color:var(--navy)}
+.qcmp-td-val.adt-col{border-right:1px solid var(--border);background:#fffdf9}
+.qcmp-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:var(--r-status);font-size:11px;font-weight:700}
+.qcmp-pill.price{background:#f1f5f9;color:var(--navy)}
+.qcmp-pill.yes{background:var(--st-ok-bg);color:var(--st-ok-fg)}
+.qcmp-pill.no{background:#fee2e2;color:#dc2626}
+.qcmp-pill.spec{background:#eff6ff;color:#1d4ed8}
+.qcmp-pill.gen{background:#f3f4f6;color:#6b7280}
+.qcmp-pill.incl{background:var(--st-ok-bg);color:var(--st-ok-fg)}
+.qcmp-pill.avail{background:#eff6ff;color:#1d4ed8}
+.qcmp-winner-bar{background:linear-gradient(135deg,#1a1a1a,#3f3f46);padding:12px 20px;display:flex;align-items:center;justify-content:space-between}
+.qcmp-winner-text{font-size:12px;font-weight:700;color:#fff}
+.qcmp-winner-tag{font-size:10px;background:rgba(255,255,255,.22);color:#fff;padding:3px 10px;border-radius:var(--r-status);font-weight:700}
+/* FULL COMPARISON */
+.fcmp-wrap{margin-top:24px;margin-bottom:0}
+.fcmp-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.fcmp-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:#fafbfc}
+.fcmp-title{font-size:15px;font-weight:700;color:var(--navy)}
+.fcmp-sub{font-size:11px;color:var(--gray);margin-top:2px}
+.fcmp-note{font-size:10px;color:var(--gray);background:#fff;border:1px solid var(--border);border-radius:20px;padding:4px 12px;white-space:nowrap}
+.fcmp-table{width:100%;border-collapse:collapse}
+.fcmp-table th{padding:12px 24px;font-size:11px;font-weight:700;color:var(--gray);text-align:left;background:#fafbfc;border-bottom:2px solid var(--border)}
+.fcmp-th-adt{text-align:center!important;color:var(--orange)!important}
+.fcmp-th-deel{text-align:center!important;color:#334155!important}
+.fcmp-table td{padding:13px 24px;font-size:12.5px;border-bottom:1px solid var(--border);color:var(--navy);vertical-align:middle}
+.fcmp-table tr:last-child td{border-bottom:none}
+.fcmp-table tr:hover td{background:#fafbfc}
+.fcmp-td-val{text-align:center}
+.fcmp-sec-row td{padding:9px 24px;background:#f8f9fb;font-size:10.5px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border)}
+.fcmp-feature-name{font-weight:600;color:var(--navy);font-size:12.5px}
+.fcmp-feature-desc{font-size:11px;color:var(--gray);margin-top:2px}
+.fcmp-check{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:var(--st-ok-bg);color:var(--st-ok-fg)}
+.fcmp-cross{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#fee2e2;color:#dc2626}
+.fcmp-adt-col{background:#fffdf9}
+.fcmp-footer{padding:14px 24px;background:#f8f9fb;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:16px}
+.fcmp-footer-note{font-size:11px;color:var(--gray);line-height:1.5}
+.fcmp-footer-btn{padding:7px 16px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0}
+/* .fcmp-footer-btn hover: buttons.css owns it (filled). */
+
+/* ── My Timesheet Page ── */
+.ts-back-bar{margin-bottom:18px}
+.ts-back-bar .ep-back{margin-top:0}
+.ts-filter-bar{display:flex;align-items:center;gap:10px;padding:0 0 18px;flex-shrink:0}
+.ts-filter-label{font-size:12px;font-weight:600;color:var(--gray);margin-right:2px}
+.ts-date-btn{display:flex;align-items:center;gap:8px;padding:0 14px;height:34px;background:var(--card);border:1px solid var(--border);border-radius:8px;font-size:12px;font-weight:500;color:var(--navy);cursor:pointer;white-space:nowrap}
+.ts-date-btn svg{width:14px;height:14px;stroke:var(--gray);flex-shrink:0;fill:none}
+.ts-date-chev{width:10px!important;height:10px!important;stroke:var(--gray)!important}
+.ts-btn-reset{height:34px;padding:0 16px;border-radius:8px;border:1px solid var(--border);background:var(--card);font-size:12px;font-weight:500;color:var(--navy);cursor:pointer}
+/* .ts-btn-reset hover: buttons.css owns it (outline). */
+.ts-btn-search{height:34px;padding:0 18px;border-radius:8px;border:none;background:var(--navy);color:#fff;font-size:12px;font-weight:600;cursor:pointer}
+/* .ts-btn-search hover: buttons.css owns it (filled). */
+.ts-user-bar{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 20px;margin-bottom:16px}
+.ts-user-left{display:flex;align-items:center;gap:14px}
+.ts-user-av{width:42px;height:42px;border-radius:50%;background:var(--navy);color:#fff;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ts-user-name{font-size:14px;font-weight:700;color:var(--navy)}
+.ts-user-role{display:inline-flex;align-items:center;margin-top:4px;font-size:11px;font-weight:600;color:#2563eb;background:#dbeafe;padding:2px 8px;border-radius:20px}
+.ts-user-right{display:flex;align-items:center;gap:8px}
+.ts-month-btn{display:flex;align-items:center;gap:7px;padding:0 13px;height:32px;background:var(--card);border:1px solid var(--border);border-radius:8px;font-size:12px;font-weight:600;color:var(--navy);cursor:pointer}
+.ts-month-btn svg{width:13px;height:13px;stroke:var(--gray);fill:none;flex-shrink:0}
+.ts-month-wrap{position:relative}
+/* The range filter anchors its own popover; it used to trigger the month
+   picker, which rendered over in the user bar. */
+.ts-date-wrap{position:relative}
+.ts-date-btn.open{border-color:var(--navy);box-shadow:0 0 0 3px rgba(15,23,42,.08)}
+.ts-rp-panel{position:absolute;top:calc(100% + 8px);left:0;width:320px;background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 16px 40px rgba(15,23,42,.18);padding:16px;z-index:401;animation:fadeUp .15s ease}
+.ts-rp-title{font-size:12px;font-weight:700;color:var(--navy);margin-bottom:12px}
+.ts-rp-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ts-rp-fld{display:flex;flex-direction:column;gap:5px;min-width:0}
+.ts-rp-fld span{font-size:10px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.5px}
+.ts-rp-fld input{width:100%;min-width:0;height:34px;border:1px solid var(--border);border-radius:var(--r-control);padding:0 8px;font-family:inherit;font-size:12.5px;color:var(--navy);background:#fff;outline:none;box-sizing:border-box}
+.ts-rp-fld input:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(15,23,42,.08)}
+.ts-rp-presets{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.ts-rp-preset{flex:1;min-width:74px;padding:7px 6px;border:1px solid var(--border);border-radius:var(--r-control);background:#fff;font-family:inherit;font-size:11.5px;font-weight:600;color:var(--navy);cursor:pointer;transition:.12s}
+.ts-rp-preset:hover{background:var(--card);border-color:var(--btn-accent);color:var(--btn-accent)}
+.ts-rp-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
+.ts-rp-cancel{padding:0 14px;height:32px;border:1px solid var(--border);border-radius:var(--r-control);background:#fff;font-family:inherit;font-size:12px;font-weight:600;color:var(--navy);cursor:pointer}
+.ts-rp-apply{padding:0 18px;height:32px;border:1px solid var(--navy);border-radius:var(--r-control);background:var(--navy);font-family:inherit;font-size:12px;font-weight:600;color:#fff;cursor:pointer}
+.ts-rp-cancel:hover{background:var(--card);border-color:var(--btn-accent);color:var(--btn-accent)}
+.ts-rp-apply:hover{background:var(--btn-accent);border-color:var(--btn-accent);color:#fff}
+/* Days outside the filtered range keep their date and lose everything else */
+.ts-day-cell.out-of-range{background:repeating-linear-gradient(135deg,#fbfcfd,#fbfcfd 6px,#f5f7f9 6px,#f5f7f9 12px)}
+.ts-day-cell.out-of-range .ts-day-num{color:#cbd5e1}
+.ts-mp-overlay{position:fixed;inset:0;z-index:400}
+.ts-mp-panel{position:absolute;top:calc(100% + 8px);right:0;width:216px;background:#fff;border-radius:16px;box-shadow:0 16px 40px rgba(15,23,42,.18);padding:16px;z-index:401;animation:fadeUp .15s ease}
+.ts-mp-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.ts-mp-year{font-size:14px;font-weight:800;color:var(--navy)}
+.ts-mp-nav{width:24px;height:24px;border:none;background:none;border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--gray);cursor:pointer;transition:.12s}
+.ts-mp-nav:hover{background:var(--btn-ghost-bg);color:var(--btn-accent)}
+.ts-mp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ts-mp-month{border:1px solid var(--border);background:#fff;border-radius:10px;padding:9px 0;font-size:12.5px;font-weight:600;color:var(--navy);cursor:pointer;text-align:center;transition:.12s;font-family:inherit}
+.ts-mp-month:hover{border-color:var(--orange)}
+.ts-mp-month.sel{background:var(--orange);border-color:var(--orange);color:#fff}
+.ts-mp-this-month{display:block;width:100%;margin-top:14px;padding:2px 0 0;border:none;background:none;color:var(--orange);font-size:12.5px;font-weight:700;text-align:center;cursor:pointer;font-family:inherit}
+.ts-refresh-btn{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--card);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.ts-refresh-btn:hover{background:var(--card);border-color:var(--btn-accent);color:var(--btn-accent)}
+.ts-refresh-btn svg{width:14px;height:14px;stroke:var(--gray);fill:none}
+.ts-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+.ts-stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 20px}
+.ts-stat-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.ts-stat-label{font-size:11px;font-weight:600;color:var(--gray);letter-spacing:.3px}
+/* The fill and the glyph colour live here, not in the four inline styles the
+   builder used to carry (blue, orange, green, purple - one per card). Same
+   neutral chip as .csm-status-icon and .hr-action-icon: four cards side by
+   side are one row of numbers, not four different kinds of news. */
+.ts-stat-ico{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:#f1f3f5;color:var(--navy)}
+.ts-stat-ico svg{width:15px;height:15px;fill:none;stroke:currentColor}
+.ts-stat-val{font-size:28px;font-weight:800;color:var(--navy);line-height:1}
+.ts-stat-sub{font-size:11px;color:var(--gray);margin-top:4px}
+.ts-stat-vs{font-size:11px;font-weight:500;margin-top:10px;display:flex;align-items:center;gap:4px}
+.ts-stat-vs.pos{color:var(--green)}
+.ts-stat-vs.neu{color:var(--gray)}
+.ts-cal-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px}
+.ts-cal-head{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border)}
+.ts-cal-title{font-size:14px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:10px}
+.ts-inprog{font-size:10px;font-weight:600;padding:3px 9px;border-radius:var(--r-status);background:var(--st-wait-bg);color:var(--st-wait-fg)}
+.ts-cal-legend{display:flex;align-items:center;gap:14px}
+.ts-leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--gray);font-weight:500}
+.ts-leg-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.ts-col-hdrs{display:grid;grid-template-columns:72px repeat(5,1fr) 84px 84px;background:var(--light);border-bottom:1px solid var(--border)}
+.ts-col-hdr{padding:9px 10px;font-size:10px;font-weight:700;letter-spacing:.6px;color:var(--gray);text-align:center}
+.ts-col-hdr.we{color:#d97706;background:rgba(254,243,226,.6)}
+.ts-cal-row{display:grid;grid-template-columns:72px repeat(5,1fr) 84px 84px;border-bottom:1px solid var(--border)}
+.ts-cal-row:last-child{border-bottom:none}
+.ts-week-cell{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:8px 6px;background:var(--light);border-right:1px solid var(--border)}
+.ts-wk-label{font-size:10px;font-weight:600;color:var(--gray)}
+.ts-wk-total{font-size:12px;font-weight:700;color:var(--navy);font-variant-numeric:tabular-nums;line-height:1}
+.ts-wk-total.none{color:#cbd5e1;font-weight:600}
+.ts-day-cell{position:relative;padding:9px 11px;border-right:1px solid var(--border);border-left:3px solid transparent;min-height:72px;display:flex;flex-direction:column;gap:2px;cursor:default;transition:background .12s}
+.ts-day-cell.is-clickable{cursor:pointer}
+.ts-day-cell:last-child{border-right:none}
+.ts-day-cell.we{background:rgba(254,243,226,.3)}
+.ts-day-cell.is-today{background:rgba(26,26,26,.06)}
+/* a picked day is a selected line item — same light blue as every table row */
+.ts-day-cell.is-selected{background:var(--row-sel);border-left-color:var(--row-sel-rail)}
+.ts-day-cell.is-clickable:hover{background:var(--row-hover)}
+.ts-day-cell.is-selected:hover{background:var(--row-sel-hover)}
+/* Each rail IS its status colour - the same token the badge in that row uses.
+   The green one used to be #4ade80, a shade belonging to no status at all, and
+   the three were only matched to each other by eye. */
+.ts-day-cell.st-present{border-left-color:var(--st-ok-fg)}
+.ts-day-cell.st-absent{border-left-color:var(--st-bad-fg)}
+.ts-day-cell.st-inprog{border-left-color:var(--st-wait-fg)}
+.ts-empty{background:transparent;cursor:default}
+/* Date sits at the TOP-RIGHT of the cell. It stays the first child, so it is
+   still first in the reading and tab order and still owns the top line - only
+   its alignment within that line changes. The value below it keeps the left
+   edge, which is what puts every hour figure in the grid on one vertical line
+   down each column, with the dates on another. */
+.ts-day-num{font-size:11.5px;font-weight:700;color:#9ca3af;line-height:1;letter-spacing:.2px;text-align:right}
+/* margin-left:auto pushes the today disc across; the negative margins that
+   used to pull it into the LEFT corner are mirrored to the right one. */
+.ts-day-num.today{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;margin:-4px -4px -1px auto;background:var(--orange);border-radius:50%;color:#fff}
+.ts-day-cell.we .ts-day-num{color:#c4a97a}
+.ts-day-pill{font-size:9px;font-weight:700;padding:2px 7px;border-radius:var(--r-status);display:inline-flex;align-items:center;gap:3px;letter-spacing:.2px;width:fit-content;margin-top:2px}
+.ts-day-pill.present{background:var(--st-ok-bg);color:var(--st-ok-fg)}
+.ts-day-pill.absent{background:var(--st-bad-bg);color:var(--st-bad-fg)}
+.ts-day-pill.inprog{background:var(--st-wait-bg);color:var(--st-wait-fg)}
+.ts-day-pill.future{color:#cbd5e1}
+.ts-day-hrs{font-size:14.5px;font-weight:700;color:var(--navy);line-height:1.15;margin-top:3px;font-variant-numeric:tabular-nums}
+/* Moved to the left corner, which the date has just vacated. Left where it
+   was it would sit under the date on every cell it appears on. */
+.ts-day-peek{position:absolute;top:8px;left:10px;color:#9ca3af;opacity:0;transition:opacity .12s;pointer-events:none}
+.ts-day-peek svg{width:12px;height:12px}
+.ts-day-cell:hover .ts-day-peek{opacity:1}
+.ts-day-src{font-size:9.5px;color:#a5adba;font-weight:600;letter-spacing:.3px;text-transform:uppercase;margin-top:auto}
+.ts-footer{display:flex;justify-content:flex-end;padding:4px 0 8px}
+.ts-submit-btn{padding:10px 26px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}
+/* .ts-submit-btn hover: buttons.css owns it (filled). */
+/* Timesheet sidebar */
+.ts-split{display:block}
+.ts-main{display:block}
+.ts-sb-old-removed{display:none}
+.ts-sb-old-open-removed{display:none}
+.ts-sb-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.ts-sb-title{font-size:14px;font-weight:700;color:var(--navy)}
+.ts-sb-close{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:var(--card);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.ts-sb-close svg{width:12px;height:12px;stroke:var(--gray);fill:none}
+.ts-sb-inner{padding:16px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:12px}
+.ts-sb-date-box{display:flex;align-items:center;gap:10px;padding:12px 14px;background:#eff6ff;border-radius:10px}
+.ts-sb-date-box svg{width:16px;height:16px;stroke:#3b82f6;fill:none;flex-shrink:0}
+.ts-sb-date-val{font-size:13px;font-weight:700;color:var(--navy)}
+.ts-sb-date-day{font-size:11px;color:#3b82f6;font-weight:500;margin-top:1px}
+.ts-sb-section{background:var(--light);border-radius:10px;padding:12px 14px}
+.ts-sb-sec-title{font-size:10px;font-weight:700;color:var(--gray);letter-spacing:.5px;text-transform:uppercase;display:flex;align-items:center;gap:6px;margin-bottom:10px}
+.ts-sb-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ts-sb-dot.in{background:var(--st-ok-fg)}
+.ts-sb-dot.out{background:var(--st-bad-fg)}
+.ts-sb-field{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.ts-sb-field:last-child{margin-bottom:0}
+.ts-sb-field svg{width:14px;height:14px;stroke:var(--gray);fill:none;flex-shrink:0}
+.ts-sb-flabel{font-size:11px;color:var(--gray);width:58px;font-weight:500}
+.ts-sb-fval{font-size:12px;font-weight:600;color:var(--navy)}
+.ts-sb-total{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--light);border-radius:10px}
+.ts-sb-total-label{font-size:12px;font-weight:600;color:var(--navy)}
+.ts-sb-total-val{font-size:20px;font-weight:800;color:var(--orange)}
+.ts-sb-src{font-size:11px;color:var(--gray);padding:0 2px}
+.ts-sb-actions{margin-top:auto;flex-shrink:0;padding:12px 0 0}
+.ts-sb-submit{width:100%;padding:11px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}
+/* .ts-sb-submit hover: buttons.css owns it (filled). */
+/* ── Timesheet overlay sidebar ── */
+.ts-overlay{position:fixed;inset:0;z-index:400;display:flex;justify-content:flex-end}
+.ts-overlay-bg{position:absolute;inset:0;background:rgba(10,18,30,.45);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)}
+.ts-overlay-panel{position:relative;z-index:1;width:380px;height:100vh;background:var(--card);display:flex;flex-direction:column;box-shadow:-12px 0 48px rgba(0,0,0,.18);overflow:hidden;animation:ts-sb-slide .22s ease}
+@keyframes ts-sb-slide{from{transform:translateX(60px);opacity:0}to{transform:translateX(0);opacity:1}}
+/* ── All Timesheet Page ── */
+.at-top{display:flex;align-items:flex-start;gap:16px;padding:0 0 20px;flex-wrap:wrap}
+.at-filter-label{font-size:12px;font-weight:600;color:var(--gray);white-space:nowrap;margin-right:2px}
+.at-sel-wrap{position:relative;display:inline-flex;align-items:center}
+.at-sel{appearance:none;-webkit-appearance:none;height:34px;padding:0 30px 0 12px;border:1px solid var(--border);border-radius:8px;background:var(--card);font-size:12px;font-weight:500;color:var(--navy);cursor:pointer;min-width:100px;outline:none}
+.at-sel:focus{border-color:var(--orange)}
+.at-chev{position:absolute;right:9px;pointer-events:none;width:11px;height:11px;stroke:var(--gray);fill:none}
+.at-input{height:34px;padding:0 12px;border:1px solid var(--border);border-radius:8px;background:var(--card);font-size:12px;color:var(--navy);width:148px;outline:none}
+.at-input::placeholder{color:#94a3b8}
+.at-input:focus{border-color:var(--orange)}
+.at-btn-reset{height:34px;padding:0 18px;border-radius:8px;border:1.5px solid var(--border);background:var(--card);font-size:12px;font-weight:600;color:var(--navy);cursor:pointer}
+/* .at-btn-reset hover: buttons.css owns it (outline). */
+.at-btn-search{height:34px;padding:0 22px;border-radius:8px;border:none;background:var(--navy);color:#fff;font-size:12px;font-weight:600;cursor:pointer}
+/* .at-btn-search hover: buttons.css owns it (filled). */
+.at-stats{display:flex;align-items:stretch;background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;flex-shrink:0;align-self:flex-start}
+.at-stat-item{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 22px;min-width:88px;gap:3px;border-right:1px solid var(--border)}
+.at-stat-item:last-child{border-right:none}
+.at-stat-num{font-size:22px;font-weight:700;line-height:1.2}
+.at-stat-lbl{font-size:10.5px;font-weight:500;color:var(--gray);white-space:nowrap}
+/* overflow-x:auto, not hidden: hidden clipped the last columns away with no
+   way to reach them. The card still clips to its radius on both axes. */
+.at-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow-x:auto;overflow-y:hidden}
+.at-table{width:100%;border-collapse:collapse}
+.at-th{padding:11px 16px;font-size:11px;font-weight:700;color:var(--gray);text-align:left;letter-spacing:.3px;background:var(--light);border-bottom:1px solid var(--border)}
+.at-td{padding:14px 16px;font-size:13px;color:var(--navy);border-bottom:1px solid var(--border);vertical-align:middle}
+.at-tr:last-child .at-td{border-bottom:none}
+.at-tr:hover .at-td{background:#fafafa}
+.at-sno{font-size:13px;font-weight:700;color:var(--orange)}
+.at-emp-id{font-size:13px;font-weight:600}
+.at-emp-name{font-size:13px;font-weight:600}
+.at-badge-active{display:inline-flex;padding:3px 11px;border-radius:var(--r-status);font-size:11px;font-weight:700;background:var(--st-ok-bg);color:var(--st-ok-fg)}
+.at-badge-inactive{display:inline-flex;padding:3px 11px;border-radius:var(--r-status);font-size:11px;font-weight:700;background:var(--st-bad-bg);color:var(--st-bad-fg)}
+.at-badge-unfilled{display:inline-flex;padding:3px 11px;border-radius:var(--r-status);font-size:11px;font-weight:700;background:transparent;border:1.5px solid var(--st-bad-bd);color:var(--st-bad-fg)}
+.at-badge-filled{display:inline-flex;padding:3px 11px;border-radius:var(--r-status);font-size:11px;font-weight:700;background:transparent;border:1.5px solid var(--st-ok-bd);color:var(--st-ok-fg)}
+.at-actions{display:flex;align-items:center;gap:8px}
+.at-act-btn{width:32px;height:32px;border-radius:7px;border:1px solid var(--border);background:var(--card);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:background .12s,border-color .12s}
+.at-act-btn:hover{background:var(--card);border-color:var(--btn-accent)}
+.at-act-btn svg{width:15px;height:15px;stroke:var(--gray);fill:none}
+.at-act-btn:hover svg{stroke:var(--btn-accent)}
+/* The timesheet table used to carry a third pager of its own (.at-pagination).
+   It renders the shared .lp-pagination now, like every other listing. */
+/* ── COMPANY SETTINGS PAGE ── */
+.cs-page{display:block}
+.cs-tab-strip{display:flex;align-items:stretch;border-bottom:2px solid var(--border);background:var(--card);flex-shrink:0;overflow-x:auto;padding:0 2px;scrollbar-width:none;gap:0}
+.cs-tab-strip::-webkit-scrollbar{display:none}
+.cs-page-tab{padding:12px 16px;border:none;background:none;font-size:13px;font-weight:500;color:var(--gray);cursor:pointer;font-family:inherit;white-space:nowrap;border-bottom:2.5px solid transparent;margin-bottom:-2px;transition:.15s;display:inline-flex;align-items:center}
+.cs-page-tab.active{color:var(--orange);border-bottom-color:var(--orange);font-weight:600}
+.cs-page-tab:hover:not(.active){color:var(--btn-accent)}
+.cs-tab-content{padding:20px 0 0}
+.cs-tab-header{display:flex;justify-content:flex-end;margin-bottom:16px}
+.cs-add-btn{color:var(--orange);background:none;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.cs-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.cs-field-card{background:#f8f9fb;border:1px solid #eef0f3;border-radius:10px;padding:12px 14px;display:flex;align-items:flex-start;gap:10px}
+.cs-field-card.wide{grid-column:span 2}
+.cs-field-icon{flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#9ca3af;margin-top:2px}
+.cs-field-icon svg{width:15px;height:15px}
+.cs-field-content{flex:1;min-width:0}
+.cs-field-label{font-size:11px;color:#9ca3af;font-weight:500;margin-bottom:4px}
+.cs-field-value{font-size:13.5px;font-weight:600;color:#1e293b;line-height:1.4}
+.cs-section-header{display:flex;align-items:center;justify-content:space-between;margin:20px 0 12px}
+.cs-section-title{font-size:13.5px;font-weight:700;color:var(--navy)}
+.cs-table{width:100%;border-collapse:collapse;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.cs-th{padding:9px 12px;text-align:left;font-size:11px;font-weight:600;color:#6b7280;background:#f8fafc;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.4px}
+.cs-td{padding:10px 12px;font-size:13px;color:var(--navy);border-bottom:1px solid #f1f5f9}
+.cs-tr:last-child .cs-td{border-bottom:none}
+.cs-empty-row{padding:28px;text-align:center;color:#9ca3af;font-size:13px}
+.cs-sub-tabs{display:flex;gap:0;border-bottom:1.5px solid var(--border);margin-bottom:16px}
+.cs-sub-tab{padding:8px 16px;border:none;background:none;font-size:13px;font-weight:500;color:var(--gray);cursor:pointer;font-family:inherit;border-bottom:2px solid transparent;margin-bottom:-1.5px;transition:.15s}
+.cs-sub-tab.active{color:var(--orange);border-bottom-color:var(--orange);font-weight:600}
+.cs-sub-tab:hover:not(.active){color:var(--btn-accent)}
+.cs-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid #f1f5f9}
+.cs-toggle-row:last-child{border-bottom:none}
+.cs-toggle-label{font-size:13px;color:var(--navy)}
+.cs-toggle{position:relative;display:inline-flex;width:40px;height:22px;cursor:pointer;flex-shrink:0}
+.cs-toggle input{opacity:0;width:0;height:0;position:absolute}
+.cs-toggle-slider{position:absolute;inset:0;background:#d1d5db;border-radius:99px;transition:.2s}
+.cs-toggle-slider:before{content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.18)}
+.cs-toggle input:checked+.cs-toggle-slider{background:var(--st-ok-fg)}
+.cs-toggle input:checked+.cs-toggle-slider:before{transform:translateX(18px)}
+.cs-role-direct{color:#3b82f6;font-weight:600}
+.cs-role-entity{color:var(--orange);font-weight:600}
+.cs-status-active{color:var(--st-ok-fg);font-weight:600;font-size:13px}
+/* ── MY PROFILE PAGE ── */
+.prof-page{gap:20px}
+.prof-hero-card{display:flex;align-items:center;gap:20px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px 28px;flex-wrap:wrap}
+.prof-avatar-wrap{position:relative;flex-shrink:0}
+.prof-avatar{width:72px;height:72px;border-radius:50%;background:var(--ol);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:var(--orange);border:3px solid #d1d5db}
+.prof-avatar-badge{position:absolute;bottom:2px;right:2px;width:20px;height:20px;border-radius:50%;background:#fff;border:2px solid var(--st-ok-bd);display:flex;align-items:center;justify-content:center}
+.prof-hero-info{flex:1;min-width:0}
+.prof-hero-name{font-size:20px;font-weight:800;color:var(--navy);margin-bottom:6px}
+.prof-hero-role{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:5px}
+.prof-role-badge{background:#f1f5f9;color:var(--navy);font-size:11px;font-weight:700;padding:3px 10px;border-radius:var(--r-status)}
+.prof-hero-entity{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--gray);font-weight:500}
+.prof-hero-entity svg{color:var(--gray)}
+.prof-hero-meta{font-size:11.5px;color:var(--gray)}
+.prof-edit-btn{display:flex;align-items:center;gap:6px;padding:8px 18px;font-size:13px;margin-left:auto;flex-shrink:0}
+.prof-body{display:grid;grid-template-columns:1fr 380px;gap:18px;align-items:start}
+@media(max-width:900px){.prof-body{grid-template-columns:1fr}}
+.prof-left,.prof-right{display:flex;flex-direction:column;gap:18px}
+.prof-section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.prof-section-hdr .policy-section-title{margin-bottom:0}
+.prof-section-hdr svg{color:var(--gray)}
+.prof-field-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+/* Two columns is right inside the narrow left column of Basic Details. A card
+   that spans the full page - Bank Details - would stretch the same two columns
+   to twice the width of every other field in the profile, so it fills by size
+   instead and its fields end up the same width as the ones next door. */
+.prof-field-grid-wide{grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.prof-field{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--light)}
+.prof-field-icon{width:32px;height:32px;border-radius:8px;background:#fff;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--gray)}
+.prof-field-body{min-width:0}
+.prof-field-label{font-size:10.5px;font-weight:600;color:var(--gray);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+.prof-field-val{font-size:13px;font-weight:600;color:var(--navy);line-height:1.4;word-break:break-word}
+.prof-stats-card{}
+.prof-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.prof-stat{background:var(--light);border:1px solid var(--border);border-radius:10px;padding:14px 16px;text-align:center}
+.prof-stat-num{font-size:26px;font-weight:800;line-height:1.1;margin-bottom:4px}
+.prof-stat-lbl{font-size:11px;font-weight:500;color:var(--gray)}
+.prof-notif-list{display:flex;flex-direction:column;gap:0}
+.prof-notif-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #f1f5f9}
+.prof-notif-row:last-child{border-bottom:none;padding-bottom:0}
+.prof-notif-label{font-size:13px;font-weight:600;color:var(--navy);margin-bottom:2px}
+.prof-notif-desc{font-size:11.5px;color:var(--gray)}
+.prof-toggle{width:38px;height:21px;border-radius:99px;background:#d1d5db;position:relative;cursor:pointer;flex-shrink:0;transition:background .2s}
+.prof-toggle::after{content:'';position:absolute;width:15px;height:15px;border-radius:50%;background:#fff;top:3px;left:3px;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.prof-toggle.on{background:var(--st-ok-fg)}
+.prof-toggle.on::after{transform:translateX(17px)}
+.prof-activity-list{display:flex;flex-direction:column;gap:0}
+.prof-activity-row{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid #f1f5f9}
+.prof-activity-row:last-child{border-bottom:none;padding-bottom:0}
+.prof-activity-dot{width:9px;height:9px;border-radius:50%;background:#d1d5db;flex-shrink:0;margin-top:4px}
+.prof-activity-dot.active{background:var(--orange)}
+.prof-activity-action{font-size:12.5px;font-weight:600;color:var(--navy);margin-bottom:2px}
+.prof-activity-time{font-size:11px;color:var(--gray)}
+/* ── SWITCH ENTITY PAGE ──
+   A warm, light screen rather than the dark glass panel this used to be. The
+   whole surface is orange-50; the card on top of it is plain white, so the
+   card reads as raised without needing a heavy shadow to say so. Everything
+   that was translucent-over-dark (the icon chip, the select, the buttons) is
+   now opaque, because on a light ground a white veil at 6% opacity is simply
+   invisible.
+
+   THE ORANGES ARE LITERAL HEXES, NOT --orange. --orange is #1a1a1a in this
+   theme - the brand ink, not a hue - so var(--orange) here would paint the
+   background black. The tints below are the same orange-50/100/200 family
+   already used by .se-dd-option:hover and the .prof-att drag state. */
+.se-page{position:fixed;inset:0;background:#fff7ed;display:flex;align-items:center;justify-content:center;overflow:hidden;z-index:1000}
+.se-min-bg{position:absolute;inset:0;background:linear-gradient(160deg,#fff7ed 0%,#ffe9d2 55%,#fff4e8 100%)}
+.se-center{position:relative;z-index:1;width:100%;max-width:380px;display:flex;flex-direction:column;align-items:center;gap:0}
+.se-min-card{background:var(--card);border:1px solid #fadfc2;border-radius:20px;padding:40px 28px 28px;box-shadow:0 18px 44px rgba(124,72,20,.10)}
+.se-icon-wrap{width:60px;height:60px;border-radius:18px;background:#fff2e2;border:1.5px solid #fadfc2;display:flex;align-items:center;justify-content:center;color:var(--navy);margin-bottom:18px}
+.se-title{font-size:26px;font-weight:800;color:var(--navy);margin:0 0 8px;text-align:center;letter-spacing:-.3px}
+.se-subtitle{font-size:13.5px;color:var(--gray);text-align:center;margin:0 0 28px;line-height:1.6;max-width:320px}
+.se-dd-wrap{position:relative;width:100%;margin-bottom:20px}
+/* The one field on the screen, tinted a step warmer than the card so it reads
+   as somewhere to click without a heavy border doing the work. */
+.se-dd-trigger{display:flex;align-items:center;gap:10px;padding:0 14px;height:50px;background:#fff7ed;border-radius:14px;cursor:pointer;border:1.5px solid #fadfc2;transition:box-shadow .18s,border-color .18s,background .18s;user-select:none}
+.se-dd-trigger:hover{background:#ffefdd;border-color:#f3c894;box-shadow:0 6px 18px rgba(124,72,20,.10)}
+.se-dd-sel-initials{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0}
+.se-dd-sel-name{flex:1;font-size:14px;font-weight:700;color:var(--navy)}
+.se-dd-chev{color:var(--gray);flex-shrink:0;transition:transform .2s}
+.se-dd-panel{position:absolute;top:calc(100% + 8px);left:0;right:0;background:var(--card);border-radius:14px;box-shadow:0 16px 40px rgba(124,72,20,.16);border:1px solid #fadfc2;overflow:hidden;display:none;z-index:20;animation:seFadeIn .15s ease}
+.se-dd-panel.open{display:block}
+@keyframes seFadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.se-dd-option{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;transition:background .12s}
+.se-dd-option:hover{background:#fff7ed}
+.se-dd-option.active{background:#fff7ed}
+.se-dd-opt-initials{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0}
+.se-dd-opt-info{flex:1;min-width:0}
+.se-dd-opt-name{font-size:13.5px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:6px}
+.se-dd-curr{font-size:10px;font-weight:700;background:var(--st-ok-bg);color:var(--st-ok-fg);border-radius:5px;padding:1px 6px}
+.se-dd-opt-sub{font-size:11.5px;color:#9ca3af;margin-top:1px}
+.se-dd-check{color:var(--orange);display:flex;align-items:center}
+.se-btns{display:flex;gap:10px;width:100%}
+/* Everything these two look like - fill, stroke, label, height, radius - now
+   comes from buttons.css, the same as every other button on a light surface.
+   All that is left here is the 2:1 split of the row they share. */
+.se-cancel{flex:1}
+.se-proceed{flex:2}
+.se-proceed:active{transform:translateY(0)}
+/* Profile tabs */
+/* Divider drawn as an inset shadow, not a border: the tabs' own 2px bottom
+   border then sits exactly on it without needing a negative margin. Without
+   this, overflow-x:auto forced overflow-y to compute to auto and the 2px
+   overhang spawned a vertical scrollbar that clipped the active underline. */
+.prof-tab-bar{display:flex;gap:0;align-items:stretch;min-height:42px;margin-bottom:20px;box-shadow:inset 0 -2px 0 var(--border);overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-ms-overflow-style:none;flex-shrink:0}
+.prof-tab-bar::-webkit-scrollbar{display:none}
+.prof-tab{flex-shrink:0;display:inline-flex;align-items:center;padding:10px 20px;font-size:13px;font-weight:600;border:none;background:none;cursor:pointer;white-space:nowrap;font-family:inherit;color:#6b7280;border-bottom:2px solid transparent;transition:color .15s,border-color .15s}
+.prof-tab.active{color:var(--orange);border-bottom-color:var(--orange)}
+.prof-tab:hover:not(.active){color:var(--btn-accent)}
+.prof-tab-body{width:100%}
+/* Profile attachments grid */
+.prof-att-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0}
+.prof-att-item{display:flex;align-items:center;gap:10px;padding:12px 4px;border-bottom:1px solid #e2e8f0;border-right:1px solid #e2e8f0}
+.prof-att-item:nth-child(3n){border-right:none}
+.prof-att-icon{color:#9ca3af;flex-shrink:0;display:flex;align-items:center}
+.prof-att-name{flex:1;font-size:13px;color:var(--navy);font-weight:500}
+.prof-att-upload{background:none;border:none;cursor:pointer;color:#9ca3af;display:flex;align-items:center;padding:4px;border-radius:6px;transition:color .15s,background .15s}
+/* uploaded attachment cards */
+.prof-att-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.prof-att-card{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:#fff;min-width:0;transition:border-color .15s,box-shadow .15s}
+.prof-att-card:hover{border-color:var(--st-ok-bd);box-shadow:0 2px 10px rgba(15,23,42,.06)}
+.prof-att-iconwrap{position:relative;width:38px;height:38px;border-radius:10px;background:var(--light);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:#6b7280;flex-shrink:0}
+.prof-att-tick{position:absolute;right:-5px;bottom:-5px;width:15px;height:15px;border-radius:50%;background:var(--st-ok-fg);color:#fff;display:flex;align-items:center;justify-content:center;border:2px solid #fff}
+.prof-att-tick svg{width:8px;height:8px}
+.prof-att-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.prof-att-body .prof-att-name{flex:none;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prof-att-meta{font-size:11.5px;color:#6b7280;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prof-att-date{font-size:10.5px;color:#9ca3af;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prof-att-dl{background:none;border:1.5px solid var(--border);border-radius:8px;width:32px;height:32px;cursor:pointer;color:#6b7280;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:color .15s,background .15s,border-color .15s}
+.prof-att-dl:hover{background:var(--card);border-color:var(--btn-accent);color:var(--btn-accent)}
+.prof-att-dl.danger:hover{background:var(--card);border-color:var(--btn-accent);color:var(--btn-accent)}
+.prof-att-item.prof-att-dragging{background:#eff6ff;box-shadow:inset 0 0 0 1.5px #93c5fd;border-radius:8px}
+.prof-att-empty{display:flex;align-items:center;justify-content:center;gap:8px;padding:28px;font-size:13px;font-weight:600;color:var(--st-ok-fg)}
+.prof-att-empty svg{width:15px;height:15px}
+.prof-att-count{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;color:#6b7280;background:#f1f5f9;border:1px solid var(--border);border-radius:999px;padding:3px 11px}
+.prof-att-count.ok{color:var(--st-ok-fg);background:var(--st-ok-bg);border-color:var(--st-ok-bd)}
+.prof-att-count svg{width:11px;height:11px}
+/* == AI EXECUTIVE MODULE == */
+.ai-exec-page{max-width:1180px;margin:0 auto;width:100%}
+.status-pill.available{background:var(--st-info-bg);color:var(--st-info-fg);border-color:var(--st-info-bd)}
+.status-pill.draft{background:var(--st-idle-bg);color:var(--st-idle-fg);border-color:var(--st-idle-bd)}
+/* Journey cards (dashboard) */
+.ai-journey-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px;margin-top:4px}
+.ai-journey-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:26px 26px 22px;display:flex;flex-direction:column;gap:18px;transition:.2s;min-width:0;cursor:pointer}
+.ai-journey-card:hover{border-color:#f1c27a;box-shadow:0 14px 32px rgba(15,23,42,.14);transform:translateY(-3px)}
+.ai-journey-card:active{transform:translateY(-1px);box-shadow:0 8px 20px rgba(15,23,42,.12)}
+.ai-journey-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;min-width:0}
+.ai-journey-name{font-size:15.5px;font-weight:700;color:var(--navy);line-height:1.4;min-width:0}
+.ai-journey-desc{font-size:12px;color:var(--gray);line-height:1.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Dashboard: bigger journey cards, no coverage % */
+.ai-journey-grid-lg{grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:24px}
+.ai-journey-card-lg{padding:34px 32px 30px;gap:16px;min-height:220px}
+.ai-journey-card-lg .ai-journey-name{font-size:20px}
+.ai-journey-card-lg .ai-journey-desc{font-size:14px;line-height:1.65;white-space:normal;overflow:visible;text-overflow:clip}
+.ai-journey-modules{display:flex;flex-wrap:wrap;gap:6px}
+.ai-journey-module-tag{font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:var(--r-status);background:#f1f3f5;color:var(--gray)}
+.ai-journey-module-more{background:transparent;color:var(--gray);padding-left:2px}
+.ai-journey-progress-block{display:flex;flex-direction:column;gap:8px}
+.ai-journey-progress-top{display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:var(--gray);font-weight:500}
+.ai-journey-progress-pct{color:var(--navy);font-weight:700;font-size:13px}
+.ai-journey-progress-bar{height:6px;border-radius:3px;overflow:hidden;background:#f1f3f5}
+.ai-journey-progress-fill{height:100%;background:var(--orange);border-radius:3px}
+.ai-journey-actions{display:flex;gap:10px;margin-top:auto;padding-top:18px;border-top:1px solid #f0f1f3}
+.ai-journey-actions .btn{flex:1;justify-content:center}
+/* Actor / type chips */
+.ai-chip{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:var(--r-status);border:1.5px solid;letter-spacing:.1px;white-space:nowrap}
+.ai-chip-ai{background:#f1f5f9;color:var(--navy);border-color:#cbd5e1}
+.ai-chip-human{background:#eff6ff;color:#2563eb;border-color:#93c5fd}
+.ai-chip-system{background:#f1f5f9;color:#475569;border-color:#cbd5e1}
+.ai-chip-client{background:#f5f3ff;color:#7c3aed;border-color:#ddd6fe}
+.ai-chip-validation{background:#fefce8;color:#a16207;border-color:#fde68a}
+.ai-chip-approval{background:#fef2f2;color:#dc2626;border-color:#fca5a5}
+.ai-chip-exception{background:#fdf2f8;color:#db2777;border-color:#fbcfe8}
+.ai-chip-completed{background:var(--st-ok-bg);color:var(--st-ok-fg);border-color:var(--st-ok-bd)}
+.ai-chip-queued{background:var(--st-idle-bg);color:var(--st-idle-fg);border-color:var(--st-idle-bd)}
+.ai-chip-more{display:inline-flex;align-items:center;font-size:10.5px;font-weight:600;color:var(--gray);padding:3px 4px}
+/* Run detail timeline dot states */
+.ai-timeline-dot.run-done{border-color:var(--st-ok-fg);color:var(--st-ok-fg);background:var(--st-ok-bg);font-size:13px}
+.ai-timeline-dot.run-current{border-color:#f59e0b;color:#b45309;background:#fef3c7;font-size:13px}
+.ai-timeline-dot.run-exception{border-color:#ef4444;color:#dc2626;background:#fee2e2;font-size:13px}
+.ai-timeline-dot.run-pending{border-color:var(--border);color:#cbd5e1;background:#fff;font-size:13px}
+/* Active automation: meta row + runs table */
+.ai-run-meta{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px}
+.ai-run-meta-item{display:flex;align-items:center;gap:6px;font-size:11.5px;background:var(--light);border:1px solid var(--border);border-radius:20px;padding:6px 12px}
+.ai-run-meta-label{color:var(--gray);font-weight:500}
+.ai-run-meta-val{color:var(--navy);font-weight:700}
+.cell-primary{font-size:12.5px;font-weight:600;color:var(--navy);white-space:nowrap}
+.cell-sub{font-size:11px;color:var(--gray);margin-top:2px;white-space:nowrap}
+.ai-run-progress{display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.ai-run-progress-ai{color:var(--navy)}
+.ai-run-progress-human{color:#2563eb}
+.ai-run-table{min-width:960px}
+.ai-run-table th:first-child,.ai-run-table td:first-child{text-align:left;width:auto;font-weight:400}
+.ai-run-table td{height:auto;padding:14px 16px;white-space:nowrap}
+/* AI Executive — Create Your Journey wizard */
+.ai-wizard-stepper{display:flex;align-items:center;gap:0;margin-bottom:28px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:18px 24px;overflow-x:auto}
+.ai-wizard-step{display:flex;align-items:center;gap:9px;cursor:pointer;flex-shrink:0}
+.ai-wizard-step-circle{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;flex-shrink:0;border:2px solid #d1d5db;color:#9ca3af;background:transparent;transition:.15s}
+.ai-wizard-step.active .ai-wizard-step-circle{border-color:var(--orange);color:var(--orange)}
+.ai-wizard-step.done .ai-wizard-step-circle{background:var(--orange);border-color:var(--orange);color:#fff}
+.ai-wizard-step-label{font-size:12.5px;font-weight:600;color:#9ca3af;white-space:nowrap}
+.ai-wizard-step.active .ai-wizard-step-label{color:var(--orange)}
+.ai-wizard-step.done .ai-wizard-step-label{color:var(--navy)}
+.ai-wizard-step-line{flex:1;height:1px;background:#e5e7eb;margin:0 16px;min-width:28px}
+.ai-wizard-step-line.done{background:var(--orange)}
+.ai-wizard-step-header{margin-bottom:22px}
+.ai-wizard-step-title{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:5px}
+.ai-wizard-step-subtitle{font-size:12.5px;color:var(--gray);line-height:1.6;max-width:640px}
+.ai-wizard-step-body{margin-bottom:4px}
+.ai-journey-pick-card{position:relative;background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:20px;cursor:pointer;transition:.18s;display:flex;flex-direction:column;gap:10px}
+.ai-journey-pick-card:hover{border-color:#f1c27a;box-shadow:0 10px 24px rgba(15,23,42,.1);transform:translateY(-2px)}
+.ai-journey-pick-card.selected{border-color:var(--orange);background:var(--ol);box-shadow:0 10px 24px rgba(26,26,26,.14)}
+.ai-journey-pick-check{position:absolute;top:14px;right:14px;width:22px;height:22px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;opacity:0;transform:scale(.6);transition:.15s}
+.ai-journey-pick-card.selected .ai-journey-pick-check{opacity:1;transform:scale(1)}
+.ai-journey-pick-icon{width:44px;height:44px;border-radius:12px;background:var(--light);display:flex;align-items:center;justify-content:center;color:var(--orange)}
+.ai-journey-pick-icon svg{width:22px;height:22px}
+.ai-journey-pick-name{font-size:14.5px;font-weight:700;color:var(--navy);padding-right:24px}
+.ai-journey-pick-desc{font-size:12px;color:var(--gray);line-height:1.55}
+.ai-journey-pick-meta{font-size:11px;color:var(--gray);font-weight:600;margin-top:auto;padding-top:10px;border-top:1px solid #f0f1f3}
+.ai-journey-draft-banner{display:flex;flex-direction:column;gap:2px;background:var(--ol);border:1px solid #d1d5db;border-radius:10px;padding:10px 12px;cursor:pointer;transition:.15s}
+.ai-journey-draft-banner:hover{background:#e2e8f0;border-color:var(--orange)}
+.ai-journey-draft-banner-text{font-size:10.5px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:.3px}
+.ai-journey-draft-banner-cta{font-size:12px;font-weight:600;color:var(--orange)}
+.ai-draft-pending{display:flex;align-items:center;gap:14px;background:var(--ol);border:1px solid #d1d5db;border-radius:10px;padding:9px 14px}
+.ai-draft-pending-text{font-size:12px;color:#92400e;font-weight:600;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.ai-draft-pending-dot{width:7px;height:7px;border-radius:50%;background:var(--orange);flex-shrink:0;box-shadow:0 0 0 3px rgba(26,26,26,.18)}
+/* Dashboard: activated journey highlight + CTA */
+.ai-journey-card-active{border-color:var(--st-ok-bd);background:linear-gradient(180deg,#f4fdf7,var(--card) 55%)}
+.ai-journey-card-active:hover{border-color:var(--st-ok-bd);box-shadow:0 14px 32px rgba(22,163,74,.16)}
+.ai-journey-active-badge{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;background:var(--st-ok-bg);color:var(--st-ok-fg);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:5px 11px;border-radius:var(--r-status)}
+.ai-journey-active-dot{width:6px;height:6px;border-radius:50%;background:var(--st-ok-fg);box-shadow:0 0 0 3px rgba(22,163,74,.22)}
+.ai-journey-cta-btn{width:100%;justify-content:center;margin-top:4px}
+/* AI Executive: prompt-driven run flow (Create Employee / Run Payroll) */
+.ai-run-icon-wrap{width:52px;height:52px;border-radius:14px;background:var(--ol);color:var(--orange);display:flex;align-items:center;justify-content:center;margin:0 0 16px}
+.ai-run-icon-wrap svg{width:26px;height:26px}
+.ai-run-payment-panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:28px;text-align:center;margin-top:20px}
+.ai-run-card{width:100%;max-width:320px;border-radius:16px;padding:22px 24px;background:linear-gradient(135deg,#7a1530,#b5233f 60%,#8b1e3f);color:#fff;display:flex;flex-direction:column;justify-content:space-between;gap:28px;box-shadow:0 14px 30px rgba(122,21,48,.3);margin:0 auto 22px;min-height:170px}
+.ai-run-card-top{display:flex;align-items:center;justify-content:space-between}
+.ai-run-card-bank{font-size:13px;font-weight:800;letter-spacing:.5px}
+.ai-run-card-chip{width:34px;height:26px;border-radius:5px;background:linear-gradient(135deg,#f4d78b,#d4af37)}
+.ai-run-card-number{font-size:16px;letter-spacing:2.5px;font-weight:600;font-family:monospace}
+.ai-run-card-bottom{display:flex;align-items:flex-end;justify-content:space-between}
+.ai-run-card-label{font-size:9px;opacity:.7;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.ai-run-card-name{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.ai-run-card-visa{font-size:15px;font-weight:800;font-style:italic}
+/* AI Contract Assistant — intro + live result, side by side to avoid page scroll */
+.ai-ct-assist-split{display:flex;align-items:flex-start;gap:20px;margin-top:20px}
+.ai-ct-assist-left{flex:0 0 400px;min-width:0}
+.ai-ct-assist-right{flex:1;min-width:0}
+.ai-ct-assist-idle{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;height:100%;min-height:280px;border:1.5px dashed var(--border);border-radius:16px;padding:32px 28px;color:var(--gray)}
+.ai-ct-assist-idle-icon{width:38px;height:38px;border-radius:50%;background:#f1f5f9;display:flex;align-items:center;justify-content:center;color:var(--gray);margin-bottom:14px}
+.ai-ct-assist-idle-title{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px}
+.ai-ct-assist-idle-text{font-size:12px;line-height:1.6;max-width:280px}
+@media(max-width:840px){.ai-ct-assist-split{flex-direction:column}.ai-ct-assist-left{flex:1 1 auto;width:100%}}
+/* Contract Creation Journey — persistent animated step bar */
+.aicj-wrap{display:flex;flex-direction:column;animation:fadeUp .3s ease}
+.aicj-label{display:flex;align-items:center;gap:10px;padding:0 4px;margin-bottom:10px;flex-wrap:wrap}
+.aicj-label-step{font-size:10.5px;font-weight:800;color:var(--green);text-transform:uppercase;letter-spacing:.5px;background:var(--st-ok-bg);border:1px solid var(--st-ok-bd);border-radius:var(--r-status);padding:3px 10px;white-space:nowrap}
+.aicj-label-name{font-size:13.5px;font-weight:700;color:var(--navy)}
+.aicj-agent-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:var(--navy);background:#f1f5f9;border:1px solid #cbd5e1;border-radius:var(--r-status);padding:3px 10px;cursor:pointer;white-space:nowrap;transition:background .15s}
+.aicj-agent-badge:hover{background:#e5e7eb}
+.ai-ellipsis span{animation:blink 1.4s infinite}
+.ai-ellipsis span:nth-child(2){animation-delay:.2s}
+.ai-ellipsis span:nth-child(3){animation-delay:.4s}
+.skel-avatar,.skel-line{background:linear-gradient(90deg,#eee 25%,#f5f5f5 37%,#eee 63%);background-size:400% 100%;animation:skeleton-sweep 1.4s ease infinite;border-radius:6px}
+.skel-avatar{width:40px;height:40px;border-radius:50%;flex-shrink:0}
+.skel-line{height:12px}
+@keyframes skeleton-sweep{0%{background-position:100% 50%}100%{background-position:0 50%}}
+.ai-toast-stack{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:10px;z-index:200;pointer-events:none}
+.ai-toast{display:flex;align-items:flex-start;gap:10px;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 10px 30px rgba(15,23,42,.14);padding:14px 16px;max-width:320px;animation:fadeUp .25s ease}
+.ai-toast-out{animation:ai-toast-out .25s ease forwards}
+@keyframes ai-toast-out{to{opacity:0;transform:translateY(6px)}}
+.ai-toast-icon{width:22px;height:22px;border-radius:50%;background:var(--st-ok-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.ai-toast-title{font-size:12.5px;font-weight:700;color:var(--navy);line-height:1.4}
+.ai-toast-sub{font-size:11px;color:var(--gray);margin-top:2px;line-height:1.4}
+.aicj-bar{display:flex;align-items:flex-start;background:#fff;border:1px solid var(--border);border-radius:16px;padding:18px 24px 16px;margin-bottom:22px}
+.aicj-step{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
+.aicj-dot-wrap{position:relative;width:20px;height:20px;flex-shrink:0}
+.aicj-dot-wrap.clickable{cursor:pointer}
+.aicj-dot-wrap.clickable:hover .aicj-dot{border-color:var(--navy)}
+.aicj-stage-badge{position:absolute;top:-7px;right:-8px;min-width:17px;height:17px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:800;color:#fff;padding:0 3px;pointer-events:none;box-shadow:0 0 0 2px #fff}
+.aicj-stage-badge.pending{background:var(--st-wait-fg)}
+.aicj-stage-badge.exception{background:var(--st-bad-fg)}
+.aicj-dot{width:20px;height:20px;border-radius:50%;flex-shrink:0;border:3px solid var(--border);background:#fff;box-sizing:border-box;transition:border-color .25s,background .25s}
+.aicj-dot.done{background:var(--green);border-color:var(--green)}
+.aicj-dot.current{background:#fff;border-color:var(--green);box-shadow:0 0 0 4px rgba(22,163,74,.16)}
+.aicj-dot.pending{background:#fff;border-color:var(--border)}
+.aicj-step-label{margin-top:8px;width:96px;text-align:center;font-size:10px;font-weight:600;color:var(--gray);line-height:1.35}
+.aicj-step-label.done{color:var(--navy)}
+.aicj-step-label.current{color:var(--green);font-weight:800}
+.aicj-line{flex:1;height:3px;background:var(--border);margin:9px 4px 0;border-radius:2px;position:relative;overflow:hidden}
+.aicj-line-fill{position:absolute;inset:0;background:var(--green);transform:scaleX(0);transform-origin:left}
+.aicj-line.filled .aicj-line-fill{transform:scaleX(1)}
+.aicj-line.grow .aicj-line-fill{animation:aicj-grow .6s ease forwards}
+@keyframes aicj-grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+/* Contract Creation Journey — dummy ADT contract document template */
+.adt-doc-page{background:#fff;border:1px solid var(--border);border-radius:14px;max-width:680px;margin:0 auto;padding:36px 40px;box-shadow:0 10px 30px rgba(15,23,42,.08)}
+.adt-doc-header{display:flex;align-items:flex-start;justify-content:space-between;border-bottom:2px solid var(--navy);padding-bottom:18px;margin-bottom:24px}
+.adt-doc-brand{font-size:18px;font-weight:800;color:var(--navy);letter-spacing:.5px}
+.adt-doc-brand-sub{font-size:10.5px;color:var(--gray);margin-top:2px;letter-spacing:.3px}
+.adt-doc-title{font-size:13px;font-weight:700;color:var(--navy);text-align:right}
+.adt-doc-meta{font-size:11px;color:var(--gray);text-align:right;margin-top:4px}
+.adt-doc-section{margin-bottom:16px}
+.adt-doc-section-title{font-size:11.5px;font-weight:800;color:var(--orange);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+.adt-doc-clause{font-size:12.5px;color:#374151;line-height:1.65;margin-bottom:8px}
+.adt-doc-sig-row{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:24px}
+.adt-doc-sig-block{padding-top:36px;border-top:1.5px solid var(--navy)}
+.adt-doc-sig-label{font-size:11px;color:var(--gray);margin-top:6px}
+.ai-run-table th{white-space:nowrap}
+/* AI vs Human responsibility split */
+.ai-resp-split{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px}
+.ai-resp-card{padding:22px 24px}
+.ai-resp-card.ai-resp-ai{border-top:3px solid var(--orange)}
+.ai-resp-card.ai-resp-human{border-top:3px solid #2563eb}
+.ai-resp-count{font-size:11px;font-weight:600;color:var(--gray);margin-left:8px}
+.ai-resp-item{display:flex;align-items:center;gap:10px;padding:10px 2px;font-size:13px;color:var(--navy);border-bottom:1px solid #f1f5f9}
+.ai-resp-item:last-child{border-bottom:none}
+.ai-resp-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.ai-resp-dot.ai{background:var(--orange)}
+.ai-resp-dot.human{background:#2563eb}
+/* AI-assisted contract creation: chat (left) + form workspace (right) */
+.ai-ct-split{display:flex;margin:-28px -32px;height:calc(100vh - 56px)}
+.ai-ct-split-chat{display:flex;flex-direction:column;flex:0 0 380px;border-right:1px solid var(--border);background:#fff;min-width:0}
+/* Vertical event timeline (journey detail + run detail) */
+.ai-timeline{position:relative;padding-left:4px}
+.ai-timeline-item{position:relative;padding-left:44px;padding-bottom:20px}
+.ai-timeline-item:last-child{padding-bottom:0}
+.ai-timeline-item::before{content:"";position:absolute;left:14px;top:30px;bottom:0;width:2px;background:var(--border)}
+.ai-timeline-item:last-child::before{display:none}
+.ai-timeline-dot{position:absolute;left:0;top:0;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#fff;border:2px solid var(--border);font-size:11px;font-weight:700;color:var(--gray);flex-shrink:0;z-index:1}
+.ai-timeline-dot.ai,.ai-timeline-dot.human,.ai-timeline-dot.client,.ai-timeline-dot.system{border-color:var(--navy);color:var(--navy);background:#fff}
+.ai-timeline-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;cursor:pointer;transition:.15s}
+.ai-timeline-card:hover{border-color:var(--orange);box-shadow:0 2px 10px rgba(15,23,42,.05)}
+.ai-timeline-card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:5px}
+.ai-timeline-card-title{font-size:13px;font-weight:700;color:var(--navy)}
+.ai-timeline-card-desc{font-size:11.5px;color:var(--gray);line-height:1.5;margin-bottom:9px}
+.ai-timeline-chips{display:flex;flex-wrap:wrap;gap:6px}
+/* Automate Journey — per-event scope rows */
+.ai-scope-table{border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.ai-scope-row{display:flex;align-items:center;gap:16px;padding:14px 16px;border-bottom:1px solid #f1f5f9;flex-wrap:wrap}
+.ai-scope-row:last-child{border-bottom:none}
+.ai-scope-row:nth-child(odd){background:#fafbfc}
+.ai-scope-name{flex:1 1 240px;min-width:220px}
+.ai-scope-name-text{font-size:12.5px;font-weight:600;color:var(--navy);margin-bottom:6px}
+.ai-scope-mode-seg{flex:0 0 auto;width:auto;min-width:150px}
+.ai-scope-row-manual{background:#fafbfc}
+.ai-scope-manual-badge{flex:0 0 auto;font-size:11px;font-weight:600;color:#64748b;background:#f1f5f9;border:1px solid var(--border);border-radius:var(--r-status);padding:6px 14px}
+.prof-att-upload:hover{background:var(--btn-ghost-bg);color:var(--btn-accent)}
+
+/* ── TOAST NOTIFICATIONS ── */
+#toast-stack{position:fixed;top:74px;right:20px;z-index:4000;display:flex;flex-direction:column;gap:10px;pointer-events:none;max-width:360px}
+.toast{display:flex;align-items:flex-start;gap:11px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px 14px;box-shadow:0 8px 24px rgba(15,23,42,.12);pointer-events:auto;min-width:280px;max-width:360px;animation:toastIn .28s cubic-bezier(.21,1.02,.73,1) both}
+.toast.toast-leaving{animation:toastOut .22s ease forwards}
+@keyframes toastIn{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:translateX(0)}}
+@keyframes toastOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(24px)}}
+.toast-ico{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.toast-ico svg{width:14px;height:14px}
+.toast.success .toast-ico{background:var(--st-ok-bg);color:var(--st-ok-fg)}
+.toast.error .toast-ico{background:#fee2e2;color:#dc2626}
+.toast.info .toast-ico{background:#e0e7ff;color:#4f46e5}
+.toast-body{flex:1;min-width:0}
+.toast-title{font-size:13px;font-weight:600;color:var(--navy);line-height:1.35}
+.toast-sub{font-size:12px;color:var(--gray);margin-top:2px;line-height:1.4}
+.toast-close{background:none;border:none;cursor:pointer;color:#9ca3af;padding:2px;flex-shrink:0;display:flex;align-items:center;border-radius:6px;font-family:inherit}
+.toast-close:hover{background:var(--btn-ghost-bg);color:var(--btn-accent)}
+.toast-close svg{width:12px;height:12px}
+@media(max-width:640px){#toast-stack{left:16px;right:16px;max-width:none}.toast{max-width:none;width:100%}}
+
+/* ── MODULE SUB-TABS (Employees, Timesheet) ── */
+.mod-page{display:flex;flex-direction:column;width:100%;min-width:0}
+.mod-tabs-row{width:100%;max-width:1180px;margin:0 auto 16px}
+.mod-tabs-row.full{max-width:none}
+.mod-tabs{display:inline-flex;align-items:center;gap:4px;padding:4px;background:#f1f5f9;border:1px solid var(--border);border-radius:11px}
+.mod-tab{display:inline-flex;align-items:center;gap:7px;padding:7px 15px;border:none;background:transparent;border-radius:8px;font-family:inherit;font-size:13px;font-weight:600;color:#64748b;cursor:pointer;white-space:nowrap;transition:background .16s ease,color .16s ease,box-shadow .16s ease}
+.mod-tab svg{width:15px;height:15px;flex-shrink:0}
+.mod-tab:hover:not(.active){color:var(--btn-accent);background:var(--btn-tint-bg)}
+.mod-tab.active{background:var(--card);color:var(--navy);box-shadow:0 1px 3px rgba(15,23,42,.12)}
+@media(max-width:640px){.mod-tabs{width:100%}.mod-tab{flex:1;justify-content:center;padding:7px 10px;font-size:12.5px}.mod-tab span{overflow:hidden;text-overflow:ellipsis}}
+
+/* ── Support Requests: channel pill ────────────────────────────────────────
+   Where the request came in — portal, email, phone, internal. A quiet chip
+   rather than a coloured badge: the channel is context for the row, not its
+   state, and the status pill two columns over is the thing that should carry
+   colour. */
+/* ── Ticket channel chip ───────────────────────────────────────────────────
+   Where the ticket came in. A quiet chip, not a coloured badge: the channel is
+   context for the row, not its state, and the status pill further along is the
+   thing that should carry colour. Chat is the one channel that changes what
+   the panel offers — it is the only ticket with a conversation to read — so it
+   is tinted just enough to be picked out of a mixed queue. */
+.sr-channel{
+  display:inline-block;padding:2px 8px;border-radius:5px;
+  background:var(--ol);color:var(--gray);
+  font-size:10.5px;font-weight:600;letter-spacing:.2px;white-space:nowrap}
+.sr-channel.is-chat{background:var(--st-info-bg);color:var(--st-info-fg)}
+
+/* ── Tables built from two-line cells ─────────────────────────────────────
+   Taller rows than a flat table's, so the columns are pinned top-aligned: a
+   one-line cell sitting next to a two-line one floats to the middle of the row
+   otherwise, and the reading line across the row breaks. Used by any listing
+   whose rows carry .lp-c-main over .lp-c-sub. */
+.lp-table-2line td{vertical-align:top;padding-top:12px;padding-bottom:12px}
+.lp-table-2line th{vertical-align:bottom}
+/* Single-line controls stay on the row's first line rather than at the top of
+   a two-line cell's box. */
+.lp-table-2line td:has(>.lp-status-badge),
+.lp-table-2line td:has(>.lp-action-btn){vertical-align:middle}
+
+/* ── Support Requests: column widths ───────────────────────────────────────
+   The free-text Title gets the slack; everything else is a fixed shape and is
+   stopped from being negotiated wider by its own header. */
+.sr-table th:nth-child(1),.sr-table td:nth-child(1){width:48px}
+.sr-table th:nth-child(2),.sr-table td:nth-child(2){width:126px}
+.sr-table th:nth-child(3),.sr-table td:nth-child(3){width:170px}
+.sr-table th:nth-child(4),.sr-table td:nth-child(4){width:auto}
+.sr-table th:nth-child(5),.sr-table td:nth-child(5){width:112px}
+.sr-table th:nth-child(6),.sr-table td:nth-child(6){width:118px}
+.sr-table th:nth-child(7),.sr-table td:nth-child(7){width:130px}
+.sr-table th:nth-child(8),.sr-table td:nth-child(8){width:64px;text-align:right}
+
+/* ══ ALL TIMESHEET — ROW DETAIL PANEL ══════════════════════════════════════
+   Two tabs, Timesheet and Payslips, in the same split panel every other
+   listing uses. Everything structural comes from .lp-split-* and .lp-isb-* in
+   leaves.css; only what this panel adds on top lives here. */
+.at-split-wrap .lp-split-main{border:none;border-radius:0;background:transparent}
+.at-split-wrap.has-sb{min-height:500px}
+
+/* ── Identity strip ── */
+/* One header above BOTH tabs. Whose record this is does not change when you
+   switch between what they filed and what they were paid, so it is not
+   re-stated inside each tab. */
+.at-sb-head{
+  display:flex;align-items:center;gap:12px;
+  padding:0 0 14px;margin-bottom:14px;border-bottom:1px solid var(--border)}
+.at-sb-head-ico{
+  width:34px;height:34px;flex-shrink:0;border-radius:9px;background:var(--ol);color:var(--gray);
+  display:flex;align-items:center;justify-content:center}
+.at-sb-head-txt{min-width:0;flex:1}
+.at-sb-name{font-size:14.5px;font-weight:700;color:var(--navy);line-height:1.3}
+.at-sb-meta{
+  display:flex;align-items:center;gap:6px;flex-wrap:wrap;
+  font-size:11.5px;color:var(--gray);margin-top:3px}
+.at-sb-range{font-variant-numeric:tabular-nums}
+.at-sb-empid{
+  flex-shrink:0;display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:6px;
+  background:var(--ol);color:var(--gray);font-size:11px;font-weight:600;font-variant-numeric:tabular-nums}
+
+/* ── The capped-list note ── */
+/* Stated in words above the list. A list that silently stops at six is
+   indistinguishable from a complete one. */
+.at-sb-note{
+  display:flex;align-items:center;gap:8px;margin-bottom:12px;
+  padding:9px 12px;border-radius:9px;
+  background:var(--st-info-bg);border:1px solid var(--st-info-bd);
+  font-size:12px;color:var(--st-info-fg);font-weight:600;line-height:1.4}
+.at-sb-note svg{flex-shrink:0}
+
+/* ── The lists ── */
+/* Boxed and scrolled on its own so a long list never stretches the panel and
+   the header strip above stays put while you read down it. */
+.at-sb-table-wrap{
+  border:1px solid var(--border);border-radius:10px;overflow:auto;background:#fff}
+.at-sb-table{width:100%;border-collapse:collapse;min-width:520px}
+.at-sb-table tbody tr:last-child td{border-bottom:none}
+.at-sb-table tbody tr:hover td{background:#fafbfc}
+.at-sb-file{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--gray);white-space:nowrap}
+.at-sb-icon-btn{
+  width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:#fff;
+  color:#64748b;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0;
+  transition:background .15s ease,border-color .15s ease,color .15s ease}
+.at-sb-icon-btn:hover{background:var(--btn-ghost-bg);border-color:var(--btn-accent);color:var(--btn-accent)}
